@@ -1,8 +1,7 @@
-**ENG**
 # Love Rout
-A flexible app for planning date routes
+**ENG**
+Love rout is a flexible app for planning date routes.
 
 
 **RUS**
-# Love Rout
-Гибкое приложение для планирования маршрутов свиданий
+Love rout - гибкое приложение для планирования маршрутов свиданий.
