@@ -1,7 +1,7 @@
-# Love Rout
+# Dating Route
 **ENG**
-Love rout is a flexible app for planning date routes.
+Dating route is a flexible app for planning date routes.
 
 
 **RUS**
-Love rout - гибкое приложение для планирования маршрутов свиданий.
+Dating route - гибкое приложение для планирования маршрутов свиданий.
