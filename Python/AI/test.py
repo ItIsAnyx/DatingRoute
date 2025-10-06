@@ -6,7 +6,7 @@ import os
 
 # Загрузка переменных из .env
 load_dotenv()
-SECRET_KEY = os.getenv("SECRET_KEY")
+AI_SECRET_KEY = os.getenv("AI_SECRET_KEY")
 
 app = FastAPI(title="Простая проверка сервиса на передачу тензора")
 
@@ -16,7 +16,7 @@ class TestRequest(BaseModel):
 
 # Функция проверки ключа
 def verify_key(api_key: str):
-	if api_key != SECRET_KEY:
+	if api_key != AI_SECRET_KEY:
 		raise HTTPException(status_code=403, detail="Forbidden: invalid key")
 
 # Простой GET, возвращающий текст и тензор в формате JSON
