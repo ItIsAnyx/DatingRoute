@@ -6,6 +6,9 @@ import com.morzevichka.backend_api.dto.response.AiResponse;
 import com.morzevichka.backend_api.exception.AiServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -21,21 +24,9 @@ public class AiClientService {
     @Value("${ai-service-url}")
     private String aiServiceUrl;
 
-    public String getAiResponse(String prompt) {
-        String fullUrl = aiServiceUrl + "/api/ai/response";
+    @Value("${application.security.jwt.secret-key}")
+    private String secretKey;
 
-        AiRequest request = new AiRequest(prompt);
-
-//        ResponseEntity<AiResponse> response = restTemplate.postForEntity(fullUrl, request, AiResponse.class);
-
-//        if (Objects.isNull(response.getBody())) {
-//            throw new AiServiceException("Ai service returned empty body");
-//        }
-
-//        return response.getBody().responseText();
-
-        return "Text";
-    }
 
     public AiChatCreateResponse getAiChatCreateResponse(String prompt) {
         String fullUrl = aiServiceUrl + "/api/ai/response/create";

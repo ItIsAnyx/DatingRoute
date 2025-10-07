@@ -3,7 +3,6 @@ package com.morzevichka.backend_api.service;
 import com.morzevichka.backend_api.entity.Chat;
 import com.morzevichka.backend_api.entity.Message;
 import com.morzevichka.backend_api.entity.MessageType;
-import com.morzevichka.backend_api.entity.User;
 import com.morzevichka.backend_api.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

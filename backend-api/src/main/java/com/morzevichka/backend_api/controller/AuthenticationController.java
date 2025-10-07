@@ -22,7 +22,7 @@ public class AuthenticationController {
     private final AuthenticationMapper authenticationMapper;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest registerBody) {
+    public ResponseEntity<AuthenticationResponse> register(@RequestBody @Valid RegisterRequest registerBody) {
         AuthenticationResponse response = authenticationMapper.toDto(authenticationService.register(registerBody));
         return ResponseEntity.ok(response);
     }
