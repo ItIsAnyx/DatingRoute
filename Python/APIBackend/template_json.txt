@@ -1,0 +1,13 @@
+const routeJson = {
+     "type": "driving",
+     "points": [
+      { "name": "Красная площадь", "coords": [55.753930, 37.620795] },
+      { "name": "Театральная площадь", "coords": [55.758740, 37.619884] },
+      { "name": "Арбат", "coords": [55.752218, 37.604048] },
+      { "name": "Парк Горького", "coords": [55.729876, 37.601089] }
+  ],
+  "params": {
+    "routingMode": "pedestrian",
+    "avoidTolls": false
+  }
+};
