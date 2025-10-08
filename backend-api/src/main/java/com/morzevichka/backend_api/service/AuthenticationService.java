@@ -1,7 +1,7 @@
 package com.morzevichka.backend_api.service;
 
-import com.morzevichka.backend_api.dto.request.LoginRequest;
-import com.morzevichka.backend_api.dto.request.RegisterRequest;
+import com.morzevichka.backend_api.dto.authentication.LoginRequest;
+import com.morzevichka.backend_api.dto.authentication.RegisterRequest;
 import com.morzevichka.backend_api.entity.User;
 import com.morzevichka.backend_api.security.CustomUserDetails;
 import com.morzevichka.backend_api.security.JwtProvider;

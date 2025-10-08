@@ -31,11 +31,17 @@ public class Message {
     @Column(name = "send_date", nullable = false)
     private LocalDateTime sendDate;
 
+    @Column(name = "chat_id", nullable = false, insertable = false, updatable = false)
+    private Long chatId;
+
+    @Column(name = "user_id", nullable = false, insertable = false, updatable = false)
+    private Long userId;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "chat_id", nullable = false)
     private Chat chat;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 }

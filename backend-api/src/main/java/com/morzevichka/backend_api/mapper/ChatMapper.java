@@ -1,7 +1,6 @@
 package com.morzevichka.backend_api.mapper;
 
-import com.morzevichka.backend_api.dto.response.ChatCreateResponse;
-import com.morzevichka.backend_api.dto.response.ChatInfoResponse;
+import com.morzevichka.backend_api.dto.chat.ChatInfoResponse;
 import com.morzevichka.backend_api.entity.Chat;
 import org.springframework.stereotype.Component;
 

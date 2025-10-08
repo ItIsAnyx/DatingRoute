@@ -1,4 +1,4 @@
-package com.morzevichka.backend_api.dto.response;
+package com.morzevichka.backend_api.dto.user;
 
 import com.morzevichka.backend_api.entity.Role;
 

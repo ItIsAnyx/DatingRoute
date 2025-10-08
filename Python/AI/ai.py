@@ -23,6 +23,7 @@ class MessageRequest(BaseModel):
     message: str
 
 class MessageResponse(BaseModel):
+    title: str
     message: str
 
 # Авторизация в Hugging Face
@@ -124,7 +125,7 @@ def get_answer(payload: MessageRequest, api_key: str = Header(..., alias="x-api-
         if not text:
             text = "..."
 
-        return {"message": text}
+        return {"title": "example", "message": text}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Generation error: {e}")

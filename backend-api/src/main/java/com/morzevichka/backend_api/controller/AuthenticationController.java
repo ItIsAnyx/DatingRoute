@@ -1,8 +1,8 @@
 package com.morzevichka.backend_api.controller;
 
-import com.morzevichka.backend_api.dto.response.AuthenticationResponse;
-import com.morzevichka.backend_api.dto.request.LoginRequest;
-import com.morzevichka.backend_api.dto.request.RegisterRequest;
+import com.morzevichka.backend_api.dto.authentication.AuthenticationResponse;
+import com.morzevichka.backend_api.dto.authentication.LoginRequest;
+import com.morzevichka.backend_api.dto.authentication.RegisterRequest;
 import com.morzevichka.backend_api.mapper.AuthenticationMapper;
 import com.morzevichka.backend_api.service.AuthenticationService;
 import jakarta.validation.Valid;

@@ -17,7 +17,7 @@ public class MessageService {
     private final UserService userService;
 
     public List<Message> getMessagesByChatId(Long id) {
-        return messageRepository.getChatMessageByChatId(id);
+        return messageRepository.getAllByChatId(id);
     }
 
     public Message createMessage(Chat chat, String content, boolean isUser) {

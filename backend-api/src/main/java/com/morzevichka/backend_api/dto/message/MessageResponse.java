@@ -1,4 +1,4 @@
-package com.morzevichka.backend_api.dto.response;
+package com.morzevichka.backend_api.dto.message;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.morzevichka.backend_api.entity.MessageType;

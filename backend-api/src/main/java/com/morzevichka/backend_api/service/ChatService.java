@@ -1,8 +1,8 @@
 package com.morzevichka.backend_api.service;
 
-import com.morzevichka.backend_api.dto.response.AiChatCreateResponse;
-import com.morzevichka.backend_api.dto.response.ChatCreateResponse;
-import com.morzevichka.backend_api.dto.response.MessageResponse;
+import com.morzevichka.backend_api.dto.ai.AiCreateResponse;
+import com.morzevichka.backend_api.dto.chat.ChatCreateResponse;
+import com.morzevichka.backend_api.dto.message.MessageResponse;
 import com.morzevichka.backend_api.entity.Chat;
 import com.morzevichka.backend_api.entity.Message;
 import com.morzevichka.backend_api.exception.ChatNotFoundException;
@@ -25,8 +25,8 @@ public class ChatService {
     private final MessageMapper messageMapper;
 
     @Transactional
-    public ChatCreateResponse createChat(String firstMessage) {
-        AiChatCreateResponse aiResponse = aiClientService.getAiChatCreateResponse(firstMessage);
+    public ChatCreateResponse createChat(String message) {
+        AiCreateResponse aiResponse = aiClientService.createChat(message);
 
         Chat chat = Chat.builder()
                 .title(aiResponse.title())
@@ -35,9 +35,9 @@ public class ChatService {
 
         chatRepository.save(chat);
 
-        Message userMessage = messageService.createMessage(chat, firstMessage, true);
+        Message userMessage = messageService.createMessage(chat, message, true);
 
-        Message aiMessage = messageService.createMessage(chat, aiResponse.responseText(), false);
+        Message aiMessage = messageService.createMessage(chat, aiResponse.message(), false);
 
         MessageResponse aiMessageResponse = messageMapper.toDto(aiMessage);
 

@@ -1,9 +1,9 @@
 package com.morzevichka.backend_api.controller;
 
-import com.morzevichka.backend_api.dto.request.ChatCreateRequest;
-import com.morzevichka.backend_api.dto.response.ChatCreateResponse;
-import com.morzevichka.backend_api.dto.response.ChatInfoResponse;
-import com.morzevichka.backend_api.dto.response.MessageResponse;
+import com.morzevichka.backend_api.dto.chat.ChatCreateRequest;
+import com.morzevichka.backend_api.dto.chat.ChatCreateResponse;
+import com.morzevichka.backend_api.dto.chat.ChatInfoResponse;
+import com.morzevichka.backend_api.dto.message.MessageResponse;
 import com.morzevichka.backend_api.entity.Chat;
 import com.morzevichka.backend_api.entity.Message;
 import com.morzevichka.backend_api.mapper.ChatMapper;
@@ -36,7 +36,7 @@ public class ChatController {
 
     @PostMapping("/start")
     public ResponseEntity<ChatCreateResponse> createChat(@RequestBody @Valid ChatCreateRequest request) {
-        ChatCreateResponse response = chatService.createChat(request.firstMessage());
+        ChatCreateResponse response = chatService.createChat(request.message());
         return ResponseEntity.ok(response);
     }
 

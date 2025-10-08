@@ -1,6 +1,6 @@
 package com.morzevichka.backend_api.mapper;
 
-import com.morzevichka.backend_api.dto.response.MessageResponse;
+import com.morzevichka.backend_api.dto.message.MessageResponse;
 import com.morzevichka.backend_api.entity.Message;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +16,8 @@ public class MessageMapper {
                 message.getChat().getId(),
                 message.getContent(),
                 message.getMessageType(),
-                message.getSendDate());
+                message.getSendDate()
+        );
     }
 
     public List<MessageResponse> toDto(List<Message> messages) {

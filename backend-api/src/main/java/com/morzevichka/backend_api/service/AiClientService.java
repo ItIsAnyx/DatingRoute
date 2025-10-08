@@ -1,46 +1,42 @@
 package com.morzevichka.backend_api.service;
 
-import com.morzevichka.backend_api.dto.request.AiRequest;
-import com.morzevichka.backend_api.dto.response.AiChatCreateResponse;
-import com.morzevichka.backend_api.dto.response.AiResponse;
-import com.morzevichka.backend_api.exception.AiServiceException;
+import com.morzevichka.backend_api.dto.ai.AiRequest;
+import com.morzevichka.backend_api.dto.ai.AiCreateResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 public class AiClientService {
 
-    private final RestTemplate restTemplate;
-
-    @Value("${ai-service-url}")
+    @Value("${service.ai.url}")
     private String aiServiceUrl;
 
-    @Value("${application.security.jwt.secret-key}")
+    @Value("${service.ai.secret-key}")
     private String secretKey;
 
+    private final RestTemplate restTemplate;
 
-    public AiChatCreateResponse getAiChatCreateResponse(String prompt) {
-        String fullUrl = aiServiceUrl + "/api/ai/response/create";
+    public AiCreateResponse createChat(String prompt) {
+        AiRequest requestBody = new AiRequest(prompt);
 
-        AiRequest request = new AiRequest(prompt);
+        return restTemplate.postForEntity(
+                aiServiceUrl + "/api/response",
+                createEntity(requestBody),
+                AiCreateResponse.class
+        ).getBody();
+    }
 
-//        ResponseEntity<AiChatCreateResponse> response = restTemplate.postForEntity(fullUrl, request, AiChatCreateResponse.class);
-//
-//        if (Objects.isNull(response.getBody())) {
-//            throw new AiServiceException("Ai service returned empty body");
-//        }
-//
-//        return response.getBody();
+    public <T> HttpEntity<T> createEntity(T request) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        headers.add("x-api-key", secretKey);
 
-        return new AiChatCreateResponse("Title", "Text");
+        return new HttpEntity<>(request, headers);
     }
 }

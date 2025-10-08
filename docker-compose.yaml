@@ -15,17 +15,17 @@ services:
     depends_on:
       - db
   
-  db:
-    image: postgres
-    container_name: database
-    environment:
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_DATABASE}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+#   db:
+#     image: postgres
+#     container_name: database
+#     environment:
+#       POSTGRES_USER: ${DB_USERNAME}
+#       POSTGRES_PASSWORD: ${DB_PASSWORD}
+#       POSTGRES_DB: ${DB_DATABASE}
+#     volumes:
+#       - pgdata:/var/lib/postgresql/data
+#     ports:
+#       - "5432:5432"
 
-volumes:
-  pgdata:
+# volumes:
+#   pgdata:

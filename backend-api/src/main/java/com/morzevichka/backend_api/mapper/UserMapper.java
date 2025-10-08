@@ -1,6 +1,6 @@
 package com.morzevichka.backend_api.mapper;
 
-import com.morzevichka.backend_api.dto.response.UserInfoResponse;
+import com.morzevichka.backend_api.dto.user.UserInfoResponse;
 import com.morzevichka.backend_api.entity.User;
 import org.springframework.stereotype.Component;
 

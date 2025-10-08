@@ -1,6 +1,6 @@
 package com.morzevichka.backend_api.controller;
 
-import com.morzevichka.backend_api.dto.response.UserInfoResponse;
+import com.morzevichka.backend_api.dto.user.UserInfoResponse;
 import com.morzevichka.backend_api.entity.User;
 import com.morzevichka.backend_api.mapper.UserMapper;
 import com.morzevichka.backend_api.service.UserService;
