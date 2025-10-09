@@ -1,8 +1,6 @@
 package com.morzevichka.backend_api.controller;
 
-import com.morzevichka.backend_api.dto.authentication.AuthenticationResponse;
-import com.morzevichka.backend_api.dto.authentication.LoginRequest;
-import com.morzevichka.backend_api.dto.authentication.RegisterRequest;
+import com.morzevichka.backend_api.dto.authentication.*;
 import com.morzevichka.backend_api.mapper.AuthenticationMapper;
 import com.morzevichka.backend_api.service.AuthenticationService;
 import jakarta.validation.Valid;
@@ -19,17 +17,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
-    private final AuthenticationMapper authenticationMapper;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody @Valid RegisterRequest registerBody) {
-        AuthenticationResponse response = authenticationMapper.toDto(authenticationService.register(registerBody));
-        return ResponseEntity.ok(response);
+    public ResponseEntity<AuthenticationResponse> register(@RequestBody @Valid RegisterRequest request) {
+        return ResponseEntity.ok(authenticationService.register(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody @Valid LoginRequest loginBody) {
-        AuthenticationResponse response = authenticationMapper.toDto(authenticationService.login(loginBody));
-        return ResponseEntity.ok(response);
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody @Valid LoginRequest request) {
+        return ResponseEntity.ok(authenticationService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<RefreshResponse> refresh(@RequestBody @Valid RefreshRequest request) {
+        return ResponseEntity.ok(authenticationService.refresh(request));
     }
 }
