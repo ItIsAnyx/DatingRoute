@@ -16,9 +16,6 @@ HF_TOKEN = os.getenv("HF_TOKEN")
 app = FastAPI(title="Простые запрос-ответы к нейросети")
 
 # Опциональные Pydantic-модели для POST-запросов
-class RouteRequest(BaseModel):
-	user_request: str
-
 class MessageRequest(BaseModel):
     message: str
 
@@ -83,7 +80,7 @@ def health():
 Требует заголовок x-api-key для аутентификации.
 """
 @app.post("/api/response", response_model=MessageRequest)
-def get_answer(payload: MessageRequest, messages=None, api_key: str = Header(..., alias="AI_SECRET_KEY")):
+def get_answer(payload: MessageRequest, messages=None, api_key: str = Header(..., alias="AI_SECRET_KEY"), generation_kwargs=None):
     verify_key(api_key)
 
     if pipe is None:
@@ -93,13 +90,14 @@ def get_answer(payload: MessageRequest, messages=None, api_key: str = Header(...
     user_text = payload.message
     try:
         # Параметры генерации
-        generation_kwargs = {
-            "max_new_tokens": 150,
-            "do_sample": True,
-            "temperature": 0.7,
-            # "top_p": 0.9,
-            # "repetition_penalty": 1.05
-        }
+        if generation_kwargs == None:
+            generation_kwargs = {
+                "max_new_tokens": 150,
+                "do_sample": True,
+                "temperature": 0.7,
+                # "top_p": 0.9,
+                # "repetition_penalty": 1.05
+            }
         if messages == None:
             messages = [
                 {"role": "system", "content": "You are a helpful assistant."},
@@ -136,13 +134,23 @@ def get_answer(payload: MessageRequest, messages=None, api_key: str = Header(...
 def get_chat_title(payload: MessageRequest, api_key: str = Header(..., alias="AI_SECRET_KEY")):
     verify_key(api_key)
     messages = [
-        {"role": "system", "content": "You are a trained assistant who comes up with short titles for text. Don't add an explanation that this is the title. You only need to write the title itself"},
+        {"role": "system", "content": (
+            "Generate a short (3–6 words) title for the user's message. "
+            "Return only the title, no explanations or greetings."
+            "Example:\n"
+            "User: I like reading books. Can you recommend some?\n"
+            "Title: Book Recommendations\n\n"
+            "Now generate a title for the next message."
+        )},
         {"role": "user", "content": payload.message}
     ]
-    print("Accepted messages: ", messages)
-
+    generation_kwargs = {
+        "max_new_tokens": 25,
+        "do_sample": False,
+        # "repetition_penalty": 1.05
+    }
     # Два запроса к нейронке. Один - для генерации названия чата, другой - для генерации ответа на запрос пользователя
-    chat_name = get_answer(payload, messages, api_key)
+    chat_name = get_answer(payload, messages, api_key, generation_kwargs)
     print(f"Chat name success: ", chat_name)
     answer = get_answer(payload, api_key=api_key)
     print(f"Answer success: ", answer)
