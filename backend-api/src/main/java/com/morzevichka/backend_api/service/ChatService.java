@@ -1,11 +1,12 @@
 package com.morzevichka.backend_api.service;
 
 import com.morzevichka.backend_api.dto.ai.AiCreateResponse;
+import com.morzevichka.backend_api.dto.chat.ChatCreateRequest;
 import com.morzevichka.backend_api.dto.chat.ChatCreateResponse;
-import com.morzevichka.backend_api.dto.message.MessageResponse;
+import com.morzevichka.backend_api.dto.chat.ChatInfoResponse;
 import com.morzevichka.backend_api.entity.Chat;
 import com.morzevichka.backend_api.entity.Message;
-import com.morzevichka.backend_api.exception.ChatNotFoundException;
+import com.morzevichka.backend_api.mapper.ChatMapper;
 import com.morzevichka.backend_api.mapper.MessageMapper;
 import com.morzevichka.backend_api.repository.ChatRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,29 +24,27 @@ public class ChatService {
     private final AiClientService aiClientService;
     private final MessageService messageService;
     private final MessageMapper messageMapper;
+    private final ChatMapper chatMapper;
 
     @Transactional
-    public ChatCreateResponse createChat(String message) {
-        AiCreateResponse aiResponse = aiClientService.createChat(message);
+    public ChatCreateResponse createChat(ChatCreateRequest request) {
+        AiCreateResponse aiResponse = aiClientService.createChat(request.message());
 
         Chat chat = Chat.builder()
                 .title(aiResponse.title())
                 .user(userService.getCurrentUser())
                 .build();
-
         chatRepository.save(chat);
 
-        Message userMessage = messageService.createMessage(chat, message, true);
+        messageService.createUserMessage(chat.getId(), request.message());
+        Message aiMessage = messageService.createAiMessage(chat.getId(), aiResponse.message());
 
-        Message aiMessage = messageService.createMessage(chat, aiResponse.message(), false);
-
-        MessageResponse aiMessageResponse = messageMapper.toDto(aiMessage);
-
-        return new ChatCreateResponse(chat.getId(), chat.getTitle(), aiMessageResponse);
+        return chatMapper.toChatCreateDto(chat, messageMapper.toDto(aiMessage));
     }
 
-    public List<Chat> getUserChats() {
-        return chatRepository.findAllByUserId(userService.getCurrentUser().getId());
+    public List<ChatInfoResponse> getUserChats() {
+        List<Chat> chats = chatRepository.findAllByUserId(userService.getCurrentUser().getId());
+        return chatMapper.toChatInfoDto(chats);
     }
 
     public List<Chat> getAllChats() {
@@ -54,6 +53,6 @@ public class ChatService {
 
     public Chat getChatById(Long id) {
         return chatRepository.findById(id)
-                .orElseThrow(() -> new ChatNotFoundException(id));
+                .orElseThrow(() -> new IllegalArgumentException("Chat not found with id:" + id));
     }
 }

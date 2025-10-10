@@ -1,7 +1,6 @@
 package com.morzevichka.backend_api.service;
 
 import com.morzevichka.backend_api.entity.Role;
-import com.morzevichka.backend_api.exception.UserAlreadyExistsException;
 import com.morzevichka.backend_api.entity.User;
 import com.morzevichka.backend_api.repository.UserRepository;
 import com.morzevichka.backend_api.security.CustomUserDetails;
@@ -25,7 +24,7 @@ public class UserService {
 
     public User createUser(String login, String email, String password) {
         if (userRepository.existsByEmail(email)) {
-            throw new UserAlreadyExistsException(email);
+            throw new IllegalArgumentException(email);
         }
 
         User user = User.builder()

@@ -124,7 +124,7 @@ Content-Type: application/json
    
    {
        "token": "jhgFy7ffjF028JBjgt2J..."
-}
+   }
    ```
 
 
@@ -226,19 +226,7 @@ Content-Type: application/json
 
    Invalid data: токен недействителен или отсутствует в запросе
 
-   Тело ответа:
-
-   ```json
-   {
-       "error": "Invalid data",
-       "details": {
-           "refresh_token": "Expired or empty"
-       }
-   }
-   ```
-
-   - **error** - тип ошибки
-   - **details** - содержит в качестве ключей поля, которые не прошли валидацию и сообщения к ним
+   Тела запроса нет
 
 2. **404 NOT FOUND**
 

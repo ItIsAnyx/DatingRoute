@@ -4,10 +4,6 @@ import com.morzevichka.backend_api.dto.chat.ChatCreateRequest;
 import com.morzevichka.backend_api.dto.chat.ChatCreateResponse;
 import com.morzevichka.backend_api.dto.chat.ChatInfoResponse;
 import com.morzevichka.backend_api.dto.message.MessageResponse;
-import com.morzevichka.backend_api.entity.Chat;
-import com.morzevichka.backend_api.entity.Message;
-import com.morzevichka.backend_api.mapper.ChatMapper;
-import com.morzevichka.backend_api.mapper.MessageMapper;
 import com.morzevichka.backend_api.service.MessageService;
 import com.morzevichka.backend_api.service.ChatService;
 import jakarta.validation.Valid;
@@ -23,29 +19,20 @@ import java.util.List;
 public class ChatController {
 
     private final ChatService chatService;
-    private final ChatMapper chatMapper;
     private final MessageService messageService;
-    private final MessageMapper messageMapper;
 
     @GetMapping
     public ResponseEntity<List<ChatInfoResponse>> getUserChats() {
-        List<Chat> chats = chatService.getUserChats();
-        List<ChatInfoResponse> response = chatMapper.toDto(chats);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(chatService.getUserChats());
     }
 
     @PostMapping("/start")
     public ResponseEntity<ChatCreateResponse> createChat(@RequestBody @Valid ChatCreateRequest request) {
-        ChatCreateResponse response = chatService.createChat(request.message());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(chatService.createChat(request));
     }
 
     @GetMapping("/{id}/messages")
     public ResponseEntity<List<MessageResponse>> getChatMessages(@PathVariable Long id) {
-        List<Message> messages = messageService.getMessagesByChatId(id);
-
-        List<MessageResponse> response = messageMapper.toDto(messages);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(messageService.getMessagesByChatId(id));
     }
 }
