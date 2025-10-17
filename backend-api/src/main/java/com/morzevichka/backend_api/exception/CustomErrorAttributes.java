@@ -24,9 +24,12 @@ public class CustomErrorAttributes extends DefaultErrorAttributes {
             Map<String, String> details = ex.getFieldErrors()
                     .stream()
                     .collect(Collectors.toMap(
-                            FieldError::getField,
-                            value -> Objects.isNull(value.getDefaultMessage()) ? "Invalid Field" : value.getDefaultMessage()));
+                                    FieldError::getField,
+                                    value -> Objects.isNull(value.getDefaultMessage()) ? "Invalid Field" : value.getDefaultMessage()
+                            )
+                    );
 
+            errorAttributes.put("message", "Validation failed");
             errorAttributes.put("details", details);
         }
 

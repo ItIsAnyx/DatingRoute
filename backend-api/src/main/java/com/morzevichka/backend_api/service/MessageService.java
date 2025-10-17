@@ -3,6 +3,7 @@ package com.morzevichka.backend_api.service;
 import com.morzevichka.backend_api.dto.ai.AiResponse;
 import com.morzevichka.backend_api.dto.message.MessageRequest;
 import com.morzevichka.backend_api.dto.message.MessageResponse;
+import com.morzevichka.backend_api.dto.message.PageableMessageResponse;
 import com.morzevichka.backend_api.entity.Chat;
 import com.morzevichka.backend_api.entity.Message;
 import com.morzevichka.backend_api.entity.MessageType;
@@ -10,6 +11,7 @@ import com.morzevichka.backend_api.mapper.MessageMapper;
 import com.morzevichka.backend_api.repository.ChatRepository;
 import com.morzevichka.backend_api.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,8 +59,8 @@ public class MessageService {
         return messageRepository.save(message);
     }
 
-    public List<MessageResponse> getMessagesByChatId(Long id) {
-        List<Message> messages = messageRepository.getAllByChatId(id);
-        return messageMapper.toDto(messages);
+    public PageableMessageResponse getMessagesByChatId(Long id, Pageable pageable) {
+        List<Message> messages = messageRepository.findAllByChatId(id, pageable).toList();
+        return messageMapper.toPageableDto(pageable, messages);
     }
 }

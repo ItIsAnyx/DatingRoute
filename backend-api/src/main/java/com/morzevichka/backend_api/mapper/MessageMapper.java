@@ -1,7 +1,9 @@
 package com.morzevichka.backend_api.mapper;
 
 import com.morzevichka.backend_api.dto.message.MessageResponse;
+import com.morzevichka.backend_api.dto.message.PageableMessageResponse;
 import com.morzevichka.backend_api.entity.Message;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -25,5 +27,13 @@ public class MessageMapper {
                 .stream()
                 .map(this::toDto)
                 .toList();
+    }
+
+    public PageableMessageResponse toPageableDto(Pageable pageable, List<Message> messages) {
+        return new PageableMessageResponse(
+                this.toDto(messages),
+                pageable.getPageNumber(),
+                pageable.getPageSize()
+        );
     }
 }

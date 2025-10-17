@@ -5,6 +5,7 @@ import com.morzevichka.backend_api.entity.User;
 import com.morzevichka.backend_api.repository.UserRepository;
 import com.morzevichka.backend_api.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -38,8 +39,20 @@ public class UserService {
     }
 
     public User getCurrentUser() {
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
-                .getContext().getAuthentication().getPrincipal();
-        return userDetails.getUser();
+        return getCurrentUser(SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    public User getCurrentUser(Authentication authentication) {
+        if (authentication == null) {
+            return null;
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof CustomUserDetails userDetails) {
+            return userDetails.getUser();
+        } else {
+            return null;
+        }
     }
 }
