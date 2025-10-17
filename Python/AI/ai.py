@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 from transformers import pipeline
 from huggingface_hub import login
+from json_converter import JSONConverter
 
 # Загрузка переменных из .env
 load_dotenv()
@@ -134,27 +135,61 @@ def get_answer(payload: MessageRequest, messages=None, api_key: str = Header(...
 def get_chat_title(payload: MessageRequest, api_key: str = Header(..., alias="AI_SECRET_KEY")):
     verify_key(api_key)
     messages = [
-        {"role": "system", "content": (
-            "Generate a short (3–6 words) title for the user's message. "
-            "Return only the title, no explanations or greetings."
-            "Example:\n"
-            "User: I like reading books. Can you recommend some?\n"
-            "Title: Book Recommendations\n\n"
-            "Now generate a title for the next message."
-        )},
+        {
+            "role": "system",
+            "content": """You are a strict JSON generator assistant.
+
+            Your only task is to output a valid JSON object with the following two keys:
+            {
+              "title": "Short title for user's request (3–6 words)",
+              "message": "Answer to the user's question"
+            }
+
+            Rules:
+            1. ALWAYS return a valid JSON object, not plain text.
+            2. DO NOT add explanations, greetings, markdown, or commentary.
+            3. DO NOT include extra fields, quotes outside the object, or prose before/after JSON.
+            4. The 'title' must summarize the user's request in 3–6 words.
+            5. The 'message' must directly answer the question, in the same language the user used.
+            6. If you are unsure, still output valid JSON with reasonable placeholders.
+            7. If the user's input contains a proverb, riddle, or abstract topic — still output JSON in the same format.
+            8. IMPORTANT: The "message" value must be a valid JSON string.
+               - NEVER use unescaped double quotes (") inside it.
+               - For book/movie titles, use «...», '...', or no quotes.
+               - Example: "message": "1. «1984» by George Orwell"
+
+            Examples:
+            User: Сколько будет 2+2?
+            Assistant: {"title": "Математическая задача", "message": "4"}
+
+            User: Откуда взялась поговорка 'Все дороги ведут в Рим'?
+            Assistant: {"title": "Истоки поговорки", "message": "Она появилась в Древнем Риме, так как действительно все дороги в то время вели в Рим."}
+
+            User: Распиши поэтапно решение. Сколько будет 2.73^2+(879*2)-2!*3
+            Assistant: {"title": "Решение математических уравнений", "message": "1. 2.73^2 = 7,4529\n2. 879 * 2 = 1758\n3. 2! = 2\n4. 2 * 3 = 6\n5. 7,4529 - 1758 = -1750,5471\n6. -1750,5471 - 6 = -1756,5471\nВ результате будет: -1756,5471."}
+
+            Now respond in this exact format for the next message.
+            """
+        },
         {"role": "user", "content": payload.message}
     ]
     generation_kwargs = {
-        "max_new_tokens": 25,
-        "do_sample": False,
-        # "repetition_penalty": 1.05
+        "max_new_tokens": 150,
+        "temperature": 0.5,
+        "do_sample": True,
     }
-    # Два запроса к нейронке. Один - для генерации названия чата, другой - для генерации ответа на запрос пользователя
-    chat_name = get_answer(payload, messages, api_key, generation_kwargs)
-    print(f"Chat name success: ", chat_name)
-    answer = get_answer(payload, api_key=api_key)
-    print(f"Answer success: ", answer)
 
-    result = {"title": chat_name["message"], "message": answer["message"]}
-    print(result)
-    return result
+    result = get_answer(payload, messages, api_key, generation_kwargs)
+    print(f"Answer success: ", result)
+    print(f"Type of result['message']: {type(result['message'])}")
+    print(f"Raw result['message']: {repr(result['message'])}")
+
+    try:
+        converter = JSONConverter(result["message"])
+        json_result = converter.convert_to_json()
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Convert to JSON error: {e}")
+
+    print(f"json_result:\n{json_result}")
+    return json_result
