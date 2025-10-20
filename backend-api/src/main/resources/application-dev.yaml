@@ -16,14 +16,12 @@ spring:
     hibernate:
       ddl-auto: validate
 
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: http://localhost:8081/login/oauth2/code/google
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ${REDIS_PASSWORD}
+      timeout: 60000
 
 server:
   port: 8081
@@ -40,6 +38,6 @@ application:
       expiration: 900000
       refresh-expiration: 900000
 
-logging:
-  level:
-    org.springframework.security: TRACE
+#logging:
+#  level:
+#    org.springframework.security: TRACE

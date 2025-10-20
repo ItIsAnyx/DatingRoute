@@ -7,6 +7,7 @@ import com.morzevichka.backend_api.security.CustomUserDetails;
 import com.morzevichka.backend_api.security.CustomUserDetailsService;
 import com.morzevichka.backend_api.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,6 +23,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService userDetailsService;
     private final AuthenticationMapper authenticationMapper;
+    private final RedisTemplate<String, User> redisTemplate;
 
     public AuthenticationResponse register(RegisterRequest registerBody) {
         User user = userService.createUser(
@@ -29,6 +31,8 @@ public class AuthenticationService {
                 registerBody.email(),
                 registerBody.password()
         );
+
+        redisTemplate.opsForValue().setIfAbsent(user.getEmail(), user);
 
         CustomUserDetails userDetails = new CustomUserDetails(user);
 
@@ -47,6 +51,8 @@ public class AuthenticationService {
         );
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        redisTemplate.opsForValue().setIfAbsent(userDetails.getUsername(), userDetails.getUser());
 
         return authenticationMapper.toDto(
                 jwtProvider.generateToken(userDetails),

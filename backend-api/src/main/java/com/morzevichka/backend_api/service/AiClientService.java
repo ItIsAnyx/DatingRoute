@@ -27,7 +27,7 @@ public class AiClientService {
         AiRequest request = new AiRequest(prompt);
 
         return restTemplate.postForEntity(
-                aiServiceUrl + "/api/response",
+                aiServiceUrl + "/api/response/create",
                 createEntity(request),
                 AiCreateResponse.class
         ).getBody();
@@ -37,7 +37,7 @@ public class AiClientService {
         AiRequest request = new AiRequest(prompt);
 
         return restTemplate.postForEntity(
-                aiServiceUrl + "/api/response/create",
+                aiServiceUrl + "/api/response",
                 createEntity(request),
                 AiResponse.class
         ).getBody();

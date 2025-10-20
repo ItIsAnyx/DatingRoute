@@ -10,11 +10,13 @@ import com.morzevichka.backend_api.mapper.ChatMapper;
 import com.morzevichka.backend_api.mapper.MessageMapper;
 import com.morzevichka.backend_api.repository.ChatRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -28,7 +30,9 @@ public class ChatService {
 
     @Transactional
     public ChatCreateResponse createChat(ChatCreateRequest request) {
+        log.info("Send message to AI: {}", request.message());
         AiCreateResponse aiResponse = aiClientService.createChat(request.message());
+        log.info("Response from AI is {} and title {}", aiResponse.message(), aiResponse.title());
 
         Chat chat = Chat.builder()
                 .title(aiResponse.title())
