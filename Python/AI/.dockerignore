@@ -1,4 +1,13 @@
 __pycache__/
 *.pyc
-.vscode/
+*.pyo
+*.pyd
+*.log
 .env
+.cache/
+data/
+outputs/
+checkpoints/
+.wheels/
+models/
+venv/

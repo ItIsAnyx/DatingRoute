@@ -1,8 +1,10 @@
 package com.morzevichka.backend_api.service;
 
 import com.morzevichka.backend_api.dto.authentication.*;
+import com.morzevichka.backend_api.dto.cache.CachedUser;
 import com.morzevichka.backend_api.entity.User;
 import com.morzevichka.backend_api.mapper.AuthenticationMapper;
+import com.morzevichka.backend_api.mapper.CachedUserMapper;
 import com.morzevichka.backend_api.security.CustomUserDetails;
 import com.morzevichka.backend_api.security.CustomUserDetailsService;
 import com.morzevichka.backend_api.security.JwtProvider;
@@ -23,7 +25,8 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService userDetailsService;
     private final AuthenticationMapper authenticationMapper;
-    private final RedisTemplate<String, User> redisTemplate;
+    private final RedisTemplate<String, CachedUser> redisTemplate;
+    private final CachedUserMapper cachedUserMapper;
 
     public AuthenticationResponse register(RegisterRequest registerBody) {
         User user = userService.createUser(
@@ -32,7 +35,8 @@ public class AuthenticationService {
                 registerBody.password()
         );
 
-        redisTemplate.opsForValue().setIfAbsent(user.getEmail(), user);
+        CachedUser cachedUser = cachedUserMapper.toCache(user);
+        redisTemplate.opsForValue().setIfAbsent(user.getEmail(), cachedUser);
 
         CustomUserDetails userDetails = new CustomUserDetails(user);
 
@@ -51,8 +55,6 @@ public class AuthenticationService {
         );
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-
-        redisTemplate.opsForValue().setIfAbsent(userDetails.getUsername(), userDetails.getUser());
 
         return authenticationMapper.toDto(
                 jwtProvider.generateToken(userDetails),

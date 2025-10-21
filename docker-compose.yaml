@@ -1,24 +1,26 @@
 services:
-  backend-api:
-    build: ./backend-api
-    image: backend-api
-    container_name: backend_api
-    ports:
-      - "8081:8081"
-    environment:
-      - SPRING_PROFILES_ACTIVE=dev
-      - DB_URL=jdbc:postgresql://db:5432
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_DATABASE=${DB_DATABASE}
-      - AI_SECRET_KEY=${AI_SECRET_KEY}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - REDIS_HOST=cache
-      - REDIS_PORT=6379
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-    depends_on:
-      - db
-      - cache
+  # backend-api:
+  #   build: ./backend-api
+  #   image: backend-api
+  #   container_name: backend_api
+  #   ports:
+  #     - "8081:8081"
+  #   environment:
+  #     - SPRING_PROFILES_ACTIVE=dev
+  #     - DB_URL=jdbc:postgresql://database:5432
+  #     - DB_USERNAME=${DB_USERNAME}
+  #     - DB_PASSWORD=${DB_PASSWORD}
+  #     - DB_DATABASE=${DB_DATABASE}
+  #     - AI_SECRET_KEY=${AI_SECRET_KEY}
+  #     - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+  #     - REDIS_HOST=cache
+  #     - REDIS_PORT=6379
+  #     - REDIS_PASSWORD=${REDIS_PASSWORD}
+  #   depends_on:
+  #     database:
+  #       condition: service_healthy
+  #     cache:
+  #       condition: service_healthy
 
   # ai:
   #   build: ./python/AI
@@ -28,13 +30,26 @@ services:
   #     - "8082:8082"
   #   environment:
   #     - AI_SECRET_KEY=${AI_SECRET_KEY}
-  #     - HF_MODEL=HuggingFaceTB/SmolLM2-1.7B-Instruct
-  #     - DEVICE=0
+  #     - HF_MODEL=Qwen/Qwen2.5-1.5B-Instruct
+  #     - DEVICE=cpu
   #     - HF_TOKEN=${HF_TOKEN}
-  #   command: "python -m uvicorn ai:app --reload --host 127.0.0.1 --port 8082"
+  #   command: "python -m uvicorn ai:app --host 0.0.0.0 --port 8082"
+  #   volumes:
+  #     - "./python/models:/root/.cache/huggingface"
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - capabilities: ["gpu"]
+    #           driver: nvidia
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+    #   interval: 1m
+    #   timeout: 30s
+    #   retries: 3
   
-  db:
-    image: postgres
+  database:
+    image: postgres:17-alpine
     container_name: database
     environment:
       POSTGRES_USER: ${DB_USERNAME}
@@ -44,6 +59,11 @@ services:
       - pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DB_USERNAME}"]
+      interval: 10s 
+      timeout: 5s
+      retries: 3
 
   cache:
     image: redis:8.2-alpine
@@ -55,6 +75,11 @@ services:
       - cache:/data
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s 
+      timeout: 5s
+      retries: 3
     
 volumes:
   pgdata:

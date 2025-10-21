@@ -12,7 +12,6 @@ spring:
     password: ${DB_PASSWORD}
 
   jpa:
-    show-sql: true
     hibernate:
       ddl-auto: validate
 
@@ -37,7 +36,3 @@ application:
       secret-key: ${JWT_SECRET_KEY}
       expiration: 900000
       refresh-expiration: 900000
-
-#logging:
-#  level:
-#    org.springframework.security: TRACE
