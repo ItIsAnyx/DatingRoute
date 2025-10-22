@@ -283,7 +283,7 @@ Content-Type: application/json
    
    {
        "title": "title of this chat",
-       "response": "its response!!!"
+       "message": "its response!!!"
    }
    ```
 
@@ -456,7 +456,7 @@ Content-Type: application/json
    HTTP/1.1 200 OK
    
    {
-       "response": "its response!!!"
+       "message": "its response!!!"
    }
    ```
 
