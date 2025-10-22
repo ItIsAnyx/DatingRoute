@@ -35,8 +35,7 @@ public class AuthenticationService {
                 registerBody.password()
         );
 
-        CachedUser cachedUser = cachedUserMapper.toCache(user);
-        redisTemplate.opsForValue().setIfAbsent(user.getEmail(), cachedUser);
+        redisTemplate.opsForValue().setIfAbsent(user.getEmail(), cachedUserMapper.toCache(user));
 
         CustomUserDetails userDetails = new CustomUserDetails(user);
 

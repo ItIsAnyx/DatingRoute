@@ -1,26 +1,26 @@
 services:
-  # backend-api:
-  #   build: ./backend-api
-  #   image: backend-api
-  #   container_name: backend_api
-  #   ports:
-  #     - "8081:8081"
-  #   environment:
-  #     - SPRING_PROFILES_ACTIVE=dev
-  #     - DB_URL=jdbc:postgresql://database:5432
-  #     - DB_USERNAME=${DB_USERNAME}
-  #     - DB_PASSWORD=${DB_PASSWORD}
-  #     - DB_DATABASE=${DB_DATABASE}
-  #     - AI_SECRET_KEY=${AI_SECRET_KEY}
-  #     - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-  #     - REDIS_HOST=cache
-  #     - REDIS_PORT=6379
-  #     - REDIS_PASSWORD=${REDIS_PASSWORD}
-  #   depends_on:
-  #     database:
-  #       condition: service_healthy
-  #     cache:
-  #       condition: service_healthy
+  backend-api:
+    build: ./backend-api
+    image: backend-api
+    container_name: backend_api
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - DB_URL=jdbc:postgresql://database:5432
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
+      - AI_SECRET_KEY=${AI_SECRET_KEY}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - REDIS_HOST=cache
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    depends_on:
+      database:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
 
   # ai:
   #   build: ./python/AI
@@ -36,18 +36,28 @@ services:
   #   command: "python -m uvicorn ai:app --host 0.0.0.0 --port 8082"
   #   volumes:
   #     - "./python/models:/root/.cache/huggingface"
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - capabilities: ["gpu"]
-    #           driver: nvidia
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
-    #   interval: 1m
-    #   timeout: 30s
-    #   retries: 3
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - capabilities: ["gpu"]
+  #             driver: nvidia
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+  #     interval: 1m
+  #     timeout: 30s
+  #     retries: 3
   
+  frontend:
+    build: ./Frontend
+    image: frontend
+    container_name: frontend 
+    ports:
+      - "8080:8080"
+    command: "npm run preview"
+    depends_on:
+      - backend-api
+    
   database:
     image: postgres:17-alpine
     container_name: database
