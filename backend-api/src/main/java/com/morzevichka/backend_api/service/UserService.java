@@ -1,6 +1,6 @@
 package com.morzevichka.backend_api.service;
 
-import com.morzevichka.backend_api.entity.Role;
+import com.morzevichka.backend_api.entity.UserRole;
 import com.morzevichka.backend_api.entity.User;
 import com.morzevichka.backend_api.repository.UserRepository;
 import com.morzevichka.backend_api.security.CustomUserDetails;
@@ -33,7 +33,7 @@ public class UserService {
                 .login(login)
                 .email(email)
                 .password(passwordEncoder.encode(password))
-                .role(Role.USER)
+                .userRole(UserRole.USER)
                 .build();
 
         return userRepository.save(user);

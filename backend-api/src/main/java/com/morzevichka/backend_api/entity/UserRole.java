@@ -1,6 +1,6 @@
 package com.morzevichka.backend_api.entity;
 
-public enum Role {
+public enum UserRole {
     USER,
     ADMIN
 }

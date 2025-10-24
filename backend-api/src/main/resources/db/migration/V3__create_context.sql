@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS contexts (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    chat_id BIGINT NOT NULL UNIQUE,
+    context JSONB NOT NULL,
+    CONSTRAINT fk_contexts__chat_id_chat FOREIGN KEY (chat_id) REFERENCES chats(id)
+);

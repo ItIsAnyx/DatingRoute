@@ -12,7 +12,7 @@ public class CachedUserMapper {
                 user.getLogin(),
                 user.getEmail(),
                 user.getPassword(),
-                user.getRole()
+                user.getUserRole()
         );
     }
 
@@ -22,7 +22,7 @@ public class CachedUserMapper {
                 .login(cachedUser.login())
                 .email(cachedUser.email())
                 .password(cachedUser.password())
-                .role(cachedUser.role())
+                .userRole(cachedUser.userRole())
                 .chats(null)
                 .messages(null)
                 .build();

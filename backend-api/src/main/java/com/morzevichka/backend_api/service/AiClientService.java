@@ -1,8 +1,10 @@
 package com.morzevichka.backend_api.service;
 
+import com.morzevichka.backend_api.dto.ai.AiCreateRequest;
 import com.morzevichka.backend_api.dto.ai.AiRequest;
 import com.morzevichka.backend_api.dto.ai.AiCreateResponse;
 import com.morzevichka.backend_api.dto.ai.AiResponse;
+import com.morzevichka.backend_api.entity.Context;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -24,7 +26,7 @@ public class AiClientService {
     private final RestTemplate restTemplate;
 
     public AiCreateResponse createChat(String prompt) {
-        AiRequest request = new AiRequest(prompt);
+        AiCreateRequest request = new AiCreateRequest(prompt);
 
         return restTemplate.postForEntity(
                 aiServiceUrl + "/api/response/create",
@@ -33,8 +35,8 @@ public class AiClientService {
         ).getBody();
     }
 
-    public AiResponse sendMessage(String prompt) {
-        AiRequest request = new AiRequest(prompt);
+    public AiResponse sendMessage(String prompt, Context context) {
+        AiRequest request = new AiRequest(prompt, context.getContext());
 
         return restTemplate.postForEntity(
                 aiServiceUrl + "/api/response",

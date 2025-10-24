@@ -10,7 +10,7 @@ import java.util.List;
 public class UserMapper {
 
     public UserInfoResponse toDto(User user) {
-        return new UserInfoResponse(user.getId(), user.getLogin(), user.getEmail(), user.getRole());
+        return new UserInfoResponse(user.getId(), user.getLogin(), user.getEmail(), user.getUserRole());
     }
 
     public List<UserInfoResponse> toDto(List<User> users) {

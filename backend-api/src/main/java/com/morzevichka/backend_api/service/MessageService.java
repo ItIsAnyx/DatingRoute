@@ -5,10 +5,10 @@ import com.morzevichka.backend_api.dto.message.MessageRequest;
 import com.morzevichka.backend_api.dto.message.MessageResponse;
 import com.morzevichka.backend_api.dto.message.PageableMessageResponse;
 import com.morzevichka.backend_api.entity.Chat;
+import com.morzevichka.backend_api.entity.Context;
 import com.morzevichka.backend_api.entity.Message;
 import com.morzevichka.backend_api.entity.MessageType;
 import com.morzevichka.backend_api.mapper.MessageMapper;
-import com.morzevichka.backend_api.repository.ChatRepository;
 import com.morzevichka.backend_api.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -24,16 +24,21 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final UserService userService;
     private final AiClientService aiClientService;
-    private final ChatRepository chatRepository;
     private final MessageMapper messageMapper;
+    private final ContextService contextService;
+    private final ChatService chatService;
 
     @Transactional
     public MessageResponse sendMessage(MessageRequest request) {
-        createUserMessage(request.chatId(), request.message());
+        Context context = contextService.findContextByChatId(request.chatId());
 
-        AiResponse aiResponse = aiClientService.sendMessage(request.message());
+        AiResponse aiResponse = aiClientService.sendMessage(request.message(), context);
 
+        Message userMessage = createUserMessage(request.chatId(), request.message());
         Message aiMessage = createAiMessage(request.chatId(), aiResponse.message());
+
+        Chat chat = chatService.getReferenceByChatId(context.getChatId());
+        contextService.saveContext(chat, userMessage.getContent(), aiMessage.getContent());
 
         return messageMapper.toDto(aiMessage);
     }
@@ -47,7 +52,7 @@ public class MessageService {
     }
 
     private Message createMessage(Long chatId, String content, MessageType type) {
-        Chat chat = chatRepository.getReferenceById(chatId);
+        Chat chat = chatService.getReferenceByChatId(chatId);
 
         Message message = Message.builder()
                 .content(content)
