@@ -6,6 +6,7 @@ import com.morzevichka.backend_api.entity.ContextJson;
 import com.morzevichka.backend_api.entity.ContextRole;
 import com.morzevichka.backend_api.repository.ContextRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,9 +16,9 @@ import java.util.List;
 public class ContextService {
 
     private static final Integer maxValuesInJson = 10;
-
     private final ContextRepository contextRepository;
 
+    @Cacheable(value = "contexts", key = "#context.chatId")
     public Context saveContext(Context context) {
         return contextRepository.save(validContextJson(context));
     }

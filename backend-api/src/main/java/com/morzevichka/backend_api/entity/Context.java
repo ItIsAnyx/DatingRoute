@@ -1,5 +1,6 @@
 package com.morzevichka.backend_api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,6 +23,7 @@ public class Context {
     private Long chatId;
 
     @ManyToOne(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Chat chat;
 
     @Type(JsonBinaryType.class)

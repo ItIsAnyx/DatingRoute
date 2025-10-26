@@ -23,14 +23,12 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<UserInfoResponse>> getAllUsers() {
         List<User> users = userService.getAllUsers();
-        List<UserInfoResponse> response = userMapper.toDto(users);
-       return ResponseEntity.ok(response);
+       return ResponseEntity.ok(userMapper.toDto(users));
     }
 
     @GetMapping("/me")
     public ResponseEntity<UserInfoResponse> getCurrentUser() {
         User user = userService.getCurrentUser();
-        UserInfoResponse response = userMapper.toDto(user);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(userMapper.toDto(user));
     }
 }

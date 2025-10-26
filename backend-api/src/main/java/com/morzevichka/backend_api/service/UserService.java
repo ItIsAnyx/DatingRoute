@@ -5,6 +5,7 @@ import com.morzevichka.backend_api.entity.User;
 import com.morzevichka.backend_api.repository.UserRepository;
 import com.morzevichka.backend_api.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -39,6 +40,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Cacheable(value = "users", key = "#email.toLowerCase()")
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User with " + email + " not found"));
