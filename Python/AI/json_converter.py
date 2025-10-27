@@ -6,7 +6,9 @@ class JSONConverter:
 
     def convert_to_json(self):
         try:
-            data = json.loads(self.text)
+            if self.text[0] == '`' or 'j' or 'J':
+                self.text = self.text[self.text.find("{"):]
+            data = json.loads(self.text.strip("`"))
             if isinstance(data, dict):
                 return data
             else:
@@ -18,8 +20,3 @@ class JSONConverter:
 
     def __repr__(self):
         return json.dumps(self.convert_to_json(), ensure_ascii=False, indent=2)
-
-x = JSONConverter("""{\n  "title": "Топ-5 книг в жанре научной фантастики",\n  "message": "1. «Солнечный свет» Джона Кэмертона\n2. «Атмосфера» Альберта Эйнштейна\n3. «Звездные войны» Фрэнсиса Питера\n4. «Человек-паук: Возвращение домой» Бенджамина Дарта\n5. «Джонни и Маленький» Томаса Шермана"\n}""")
-y = JSONConverter("{'title': 'Список самых популярных пирожков', 'message': 'Популярными считаются булочки с коржом и начинкой из молочного или мясного цюрихского соуса, а также тортчики и сладкие блинчики.'")
-print(x.convert_to_json())
-print(y.convert_to_json())

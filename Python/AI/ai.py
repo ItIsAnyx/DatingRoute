@@ -19,10 +19,12 @@ app = FastAPI(title="Простые запрос-ответы к нейросе�
 # Опциональные Pydantic-модели для POST-запросов
 class MessageRequest(BaseModel):
     message: str
+    context: list
 
 class MessageTitleRequest(BaseModel):
     title: str
     message: str
+    context: str
 
 # Авторизация в Hugging Face
 if HF_TOKEN:
@@ -67,6 +69,17 @@ def load_model():
         pipe = None
         print("[startup] Не удалось загрузить модель:", e)
 
+def reload_context(context: list):
+    # Добавить проверку на соответствие формату контекста
+    try:
+        prompt_text = pipe.tokenizer.apply_chat_template(context, tokenize=False, add_generation_prompt=False)
+        tokens = pipe.tokenizer(prompt_text, return_tensors="pt")
+        print(f"Токены в контексте: {tokens.input_ids.shape[1]}")
+        return context
+    except Exception as e:
+        print(f"[Ошибка] Во время чтения контекста произошла ошибка: {e}")
+        return context
+
 # Метод для проверки, загружена ли модель
 @app.get("/api/health")
 def health():
@@ -83,7 +96,7 @@ def health():
 @app.post("/api/response", response_model=MessageRequest)
 def get_answer(payload: MessageRequest, messages=None, api_key: str = Header(..., alias="AI_SECRET_KEY"), generation_kwargs=None):
     verify_key(api_key)
-
+    context = reload_context(payload.context)
     if pipe is None:
         raise HTTPException(status_code=503, detail="Model is not loaded. Check server logs or try GET /api/health")
 
@@ -93,17 +106,35 @@ def get_answer(payload: MessageRequest, messages=None, api_key: str = Header(...
         # Параметры генерации
         if generation_kwargs == None:
             generation_kwargs = {
-                "max_new_tokens": 150,
+                "max_new_tokens": 450,
                 "do_sample": True,
                 "temperature": 0.7,
                 # "top_p": 0.9,
                 # "repetition_penalty": 1.05
             }
         if messages == None:
-            messages = [
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": user_text},
-            ]
+            if len(context) == 0:
+                messages = [
+                    {"role": "system", "content":
+                        """You are a helpful assistant. 
+                        - NEVER use unescaped double quotes (") inside it.
+                        - For book/movie titles, use «...», '...', or no quotes.
+                        - Example: "message": "1. «1984» by George Orwell"
+                        """
+                     },
+                    {"role": "user", "content": user_text},
+                ]
+            else:
+                messages = context + [
+                    {"role": "system", "content":
+                        """You are a helpful assistant. 
+                        - NEVER use unescaped double quotes (") inside it.
+                        - For book/movie titles, use «...», '...', or no quotes.
+                        - Example: "message": "1. «1984» by George Orwell"
+                        """
+                     },
+                    {"role": "user", "content": user_text},
+                ]
 
         # Вызов pipeline для получения ответа
         out = pipe(messages, **generation_kwargs)
@@ -125,7 +156,9 @@ def get_answer(payload: MessageRequest, messages=None, api_key: str = Header(...
         if not text:
             text = "..."
 
-        return {"message": text}
+        final_context = context + [{"role": "user", "content": payload.message}, {"role": "assistant", "content": text}]
+        final_context = reload_context(final_context)
+        return {"message": text, "context": final_context}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Generation error: {e}")
@@ -187,9 +220,11 @@ def get_chat_title(payload: MessageRequest, api_key: str = Header(..., alias="AI
     try:
         converter = JSONConverter(result["message"])
         json_result = converter.convert_to_json()
+        final_context = [{"role": "user", "content": payload.message}, {"role": "assistant", "content": json_result["message"]}]
+        context = reload_context(final_context)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Convert to JSON error: {e}")
 
-    print(f"json_result:\n{json_result}")
-    return json_result
+    print(f"json_result:\n{json_result}\ncontext: {context}")
+    return json_result, context
