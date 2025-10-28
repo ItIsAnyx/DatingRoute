@@ -22,9 +22,12 @@ class MessageRequest(BaseModel):
     context: list
 
 class MessageTitleRequest(BaseModel):
+    message: str
+
+class MessageTitleResponse(BaseModel):
     title: str
     message: str
-    context: str
+    context: list
 
 # Авторизация в Hugging Face
 if HF_TOKEN:
@@ -71,13 +74,16 @@ def load_model():
 
 def reload_context(context: list):
     # Добавить проверку на соответствие формату контекста
-    try:
-        prompt_text = pipe.tokenizer.apply_chat_template(context, tokenize=False, add_generation_prompt=False)
-        tokens = pipe.tokenizer(prompt_text, return_tensors="pt")
-        print(f"Токены в контексте: {tokens.input_ids.shape[1]}")
-        return context
-    except Exception as e:
-        print(f"[Ошибка] Во время чтения контекста произошла ошибка: {e}")
+    if len(context) > 0:
+        try:
+            prompt_text = pipe.tokenizer.apply_chat_template(context, tokenize=False, add_generation_prompt=False)
+            tokens = pipe.tokenizer(prompt_text, return_tensors="pt")
+            print(f"Токены в контексте: {tokens.input_ids.shape[1]}")
+            return context
+        except Exception as e:
+            print(f"[Ошибка] Во время чтения контекста произошла ошибка: {e}")
+            return context
+    else:
         return context
 
 # Метод для проверки, загружена ли модель
@@ -164,8 +170,8 @@ def get_answer(payload: MessageRequest, messages=None, api_key: str = Header(...
         raise HTTPException(status_code=500, detail=f"Generation error: {e}")
 
 
-@app.post("/api/response/create", response_model=MessageTitleRequest)
-def get_chat_title(payload: MessageRequest, api_key: str = Header(..., alias="AI_SECRET_KEY")):
+@app.post("/api/response/create", response_model=MessageTitleResponse)
+def get_chat_title(payload: MessageTitleRequest, api_key: str = Header(..., alias="AI_SECRET_KEY")):
     verify_key(api_key)
     messages = [
         {
@@ -190,6 +196,7 @@ def get_chat_title(payload: MessageRequest, api_key: str = Header(..., alias="AI
                - NEVER use unescaped double quotes (") inside it.
                - For book/movie titles, use «...», '...', or no quotes.
                - Example: "message": "1. «1984» by George Orwell"
+            9. Don't add ```json to your answer. Start your answer right away with {.
 
             Examples:
             User: Сколько будет 2+2?
@@ -211,20 +218,54 @@ def get_chat_title(payload: MessageRequest, api_key: str = Header(..., alias="AI
         "temperature": 0.5,
         "do_sample": True,
     }
-
-    result = get_answer(payload, messages, api_key, generation_kwargs)
-    print(f"Answer success: ", result)
-    print(f"Type of result['message']: {type(result['message'])}")
-    print(f"Raw result['message']: {repr(result['message'])}")
+    request = MessageRequest(message=payload.message, context=[])
+    result = get_answer(request, messages, api_key, generation_kwargs)
+    print(f"\nAnswer success: ", result)
 
     try:
         converter = JSONConverter(result["message"])
         json_result = converter.convert_to_json()
-        final_context = [{"role": "user", "content": payload.message}, {"role": "assistant", "content": json_result["message"]}]
+        if converter.check_exception() is not None:
+            try:
+                prompt = [
+                    {"role": "system",
+                     "content": "You are a helpful assistant, who comes up with short title for user's request (3–6 words). Now make a short title for user's request."},
+                    {"role": "user", "content": payload.message}
+                ]
+                out = pipe(prompt, **generation_kwargs)
+                # Пробуем извлечь текст
+                if isinstance(out, list) and len(out) > 0:
+                    first = out[0]
+                    text = first['generated_text'][-1]['content'] or first.get("generated_text") or first.get(
+                        "text") or str(first) or str(first[0])
+                else:
+                    text = str(out)
+
+                user_text = result["message"]
+                # Защита от эхо, если модель вернула prompt + ответ. Тогда prompt удалим из начала ответа
+                if text.strip().startswith(user_text.strip()):
+                    text = text.strip()[len(user_text.strip()):].strip()
+
+                # Если пустой текст - ставим заглушку
+
+                if not text:
+                    text = "..."
+
+                tojson = '{"title": "' + text + '", "message": "' + result["message"] + '"}'
+                converter = JSONConverter(tojson)
+                json_result = converter.convert_to_json()
+
+            except Exception as e:
+                raise HTTPException(status_code=500,
+                                    detail=f"Error with trying to make a title with AI for not valid JSON response: {e}")
+
+        final_context = [{"role": "user", "content": payload.message},
+                         {"role": "assistant", "content": json_result["message"]}]
         context = reload_context(final_context)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Convert to JSON error: {e}")
 
-    print(f"json_result:\n{json_result}\ncontext: {context}")
-    return json_result, context
+    print(f"\njson_result:\n{json_result}\ncontext: {context}")
+    json_result["context"] = context
+    return json_result
