@@ -6,6 +6,7 @@ import com.morzevichka.backend_api.entity.ContextJson;
 import com.morzevichka.backend_api.entity.ContextRole;
 import com.morzevichka.backend_api.repository.ContextRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,7 @@ public class ContextService {
     private static final Integer maxValuesInJson = 10;
     private final ContextRepository contextRepository;
 
-    @Cacheable(value = "contexts", key = "#context.chatId")
+    @CachePut(value = "contexts", key = "#context.chatId")
     public Context saveContext(Context context) {
         return contextRepository.save(validContextJson(context));
     }
@@ -27,6 +28,7 @@ public class ContextService {
         return saveContext(createContext(chat, userMessage, aiMessage));
     }
 
+    @Cacheable(value = "contexts", key = "#chatId")
     public Context findContextByChatId(Long chatId) {
         return contextRepository.findByChatId(chatId)
                 .orElseThrow(() -> new IllegalArgumentException("Context with chat's id: " + chatId + " not found"));

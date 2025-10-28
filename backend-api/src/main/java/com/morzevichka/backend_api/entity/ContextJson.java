@@ -13,5 +13,5 @@ public class ContextJson {
 
     private ContextRole role;
 
-    private String context;
+    private String content;
 }

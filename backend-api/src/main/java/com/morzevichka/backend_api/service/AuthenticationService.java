@@ -12,6 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 @Service
 @RequiredArgsConstructor
@@ -22,9 +23,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService userDetailsService;
 
-    @Cacheable(value = "users", key = "#registerBody.email().toLowerCase()")
     public User register(RegisterRequest registerBody) {
-
         return userService.createUser(
                 registerBody.login(),
                 registerBody.email(),

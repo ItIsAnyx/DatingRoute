@@ -23,6 +23,10 @@ spring:
       password: ${REDIS_PASSWORD:}
       timeout: 60000
 
+  threads:
+    virtual:
+      enabled: true
+
 server:
   port: 8081
 

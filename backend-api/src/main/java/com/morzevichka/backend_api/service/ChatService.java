@@ -27,19 +27,16 @@ public class ChatService {
                 .orElseThrow(() -> new ChatNotFoundException(id));
     }
 
-    public Chat createChat(String title, User user) {
-        return Chat.builder()
+    public Chat createAndSaveChat(String title, User user) {
+        return saveChat(Chat.builder()
                 .title(title)
                 .user(user)
-                .build();
+                .build()
+        );
     }
 
     public Chat saveChat(Chat chat) {
         return chatRepository.save(chat);
-    }
-
-    public Chat saveChat(String title, User user) {
-        return saveChat(createChat(title, user));
     }
 
     public Chat getReferenceByChatId(Long chatId) {

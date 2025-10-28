@@ -25,7 +25,7 @@ public class AiClientService {
 
     private final RestTemplate restTemplate;
 
-    public AiCreateResponse createChat(String prompt) {
+    public AiCreateResponse createChatRequest(String prompt) {
         AiCreateRequest request = new AiCreateRequest(prompt);
 
         return restTemplate.postForEntity(
@@ -35,7 +35,7 @@ public class AiClientService {
         ).getBody();
     }
 
-    public AiResponse sendMessage(String prompt, Context context) {
+    public AiResponse sendMessageRequest(String prompt, Context context) {
         AiRequest request = new AiRequest(prompt, context.getContext());
 
         return restTemplate.postForEntity(

@@ -5,12 +5,17 @@ import com.morzevichka.backend_api.entity.User;
 import com.morzevichka.backend_api.repository.UserRepository;
 import com.morzevichka.backend_api.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.AbstractBindingResult;
+import org.springframework.validation.DirectFieldBindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.List;
 
@@ -25,9 +30,10 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    @Cacheable(value = "users", key = "#email")
     public User createUser(String login, String email, String password) {
         if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException(email);
+            throw new IllegalArgumentException("Email " + email + " is already used");
         }
 
         User user = User.builder()
@@ -40,7 +46,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    @Cacheable(value = "users", key = "#email.toLowerCase()")
+    @Cacheable(value = "users", key = "#email")
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User with " + email + " not found"));

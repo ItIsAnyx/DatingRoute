@@ -6,12 +6,16 @@ import com.morzevichka.backend_api.dto.message.MessageResponse;
 import com.morzevichka.backend_api.entity.Chat;
 import com.morzevichka.backend_api.entity.Context;
 import com.morzevichka.backend_api.entity.Message;
+import com.morzevichka.backend_api.entity.User;
 import com.morzevichka.backend_api.mapper.MessageMapper;
 import com.morzevichka.backend_api.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 @Slf4j
 @Service
@@ -23,19 +27,31 @@ public class SendMessageUseCase {
     private final ContextService contextService;
     private final ChatService chatService;
     private final MessageService messageService;
+    private final UserService userService;
+    private final Executor customExecutor;
 
-    @Transactional
     public MessageResponse execute(MessageRequest request) {
+        User user = userService.getCurrentUser();
+
         Context context = contextService.findContextByChatId(request.chatId());
 
-        AiResponse aiResponse = aiClientService.sendMessage(request.message(), context);
+        CompletableFuture<Message> userMessageFuture = CompletableFuture.supplyAsync(
+               () -> messageService.createUserMessage(request.chatId(), user, request.message()),
+               customExecutor
+        );
+        CompletableFuture<Message> aiMessageFuture = CompletableFuture.supplyAsync(
+                () -> {
+                    AiResponse aiResponse = aiClientService.sendMessageRequest(request.message(), context);
+                    return messageService.createAiMessage(request.chatId(), user, aiResponse.message());
+                },
+                customExecutor
+        );
 
-        Message userMessage = messageService.createUserMessage(request.chatId(), request.message());
-        Message aiMessage = messageService.createAiMessage(request.chatId(), aiResponse.message());
+        return userMessageFuture.thenCombine(aiMessageFuture, (userMessage, aiMessage) -> {
+            Chat chat = chatService.getReferenceByChatId(context.getChatId());
+            contextService.saveContext(chat, userMessage.getContent(), aiMessage.getContent());
 
-        Chat chat = chatService.getReferenceByChatId(context.getChatId());
-        contextService.saveContext(chat, userMessage.getContent(), aiMessage.getContent());
-
-        return messageMapper.toDto(aiMessage);
+            return messageMapper.toDto(aiMessage);
+        }).join();
     }
 }
