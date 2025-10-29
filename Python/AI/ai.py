@@ -247,6 +247,11 @@ def get_chat_title(payload: MessageTitleRequest, api_key: str = Header(..., alia
                      "content": "You are a helpful assistant, who comes up with short title for user's request (3–6 words). Now make a short title for user's request."},
                     {"role": "user", "content": payload.message}
                 ]
+                generation_kwargs = {
+                    "max_new_tokens": 50,
+                    "temperature": 0.3,
+                    "do_sample": True,
+                }
                 out = pipe(prompt, **generation_kwargs)
                 # Пробуем извлечь текст
                 if isinstance(out, list) and len(out) > 0:
