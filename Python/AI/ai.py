@@ -13,6 +13,7 @@ AI_SECRET_KEY = os.getenv("AI_SECRET_KEY")
 HF_MODEL = os.getenv("HF_MODEL")
 DEVICE = os.getenv("DEVICE", "cpu")
 HF_TOKEN = os.getenv("HF_TOKEN")
+MAX_CONTEXT_TOKENS = int(os.getenv("MAX_CONTEXT_TOKENS"))
 
 app = FastAPI(title="Простые запрос-ответы к нейросети")
 
@@ -57,7 +58,7 @@ def load_model():
         if DEVICE.lower() == "cpu":
             pipe = pipeline("text-generation", model=HF_MODEL, device=-1)
         elif DEVICE.lower() == "auto":
-            # Пробуем распределить pipeline по устройствам
+            # Пробуем распределить pipeline по устройствам и использовать квантование
             pipe = pipeline("text-generation", model=HF_MODEL, device_map="auto")
         else:
             try:
@@ -73,13 +74,27 @@ def load_model():
         print("[startup] Не удалось загрузить модель:", e)
 
 def reload_context(context: list):
-    # Добавить проверку на соответствие формату контекста
-    if len(context) > 0:
+    if not context or not isinstance(context, list):
+        return []
+
+    if len(context) > 2:
         try:
             prompt_text = pipe.tokenizer.apply_chat_template(context, tokenize=False, add_generation_prompt=False)
             tokens = pipe.tokenizer(prompt_text, return_tensors="pt")
             print(f"Токены в контексте: {tokens.input_ids.shape[1]}")
+
+            removed = 0
+            while tokens.input_ids.shape[1] > MAX_CONTEXT_TOKENS:
+                context = context[2:]
+                removed += 2
+                prompt_text = pipe.tokenizer.apply_chat_template(context, tokenize=False, add_generation_prompt=False)
+                tokens = pipe.tokenizer(prompt_text, return_tensors="pt")
+
+            if removed > 0:
+                print(f"[context] Удалено {removed} старых сообщений, токенов теперь: {tokens.input_ids.shape[1]}")
+
             return context
+
         except Exception as e:
             print(f"[Ошибка] Во время чтения контекста произошла ошибка: {e}")
             return context
@@ -122,7 +137,7 @@ def get_answer(payload: MessageRequest, messages=None, api_key: str = Header(...
             if len(context) == 0:
                 messages = [
                     {"role": "system", "content":
-                        """You are a helpful assistant. 
+                        """You are a helpful assistant. Always respond in the same language as the user's message.
                         - NEVER use unescaped double quotes (") inside it.
                         - For book/movie titles, use «...», '...', or no quotes.
                         - Example: "message": "1. «1984» by George Orwell"
@@ -131,16 +146,15 @@ def get_answer(payload: MessageRequest, messages=None, api_key: str = Header(...
                     {"role": "user", "content": user_text},
                 ]
             else:
-                messages = context + [
+                messages = [
                     {"role": "system", "content":
-                        """You are a helpful assistant. 
+                        """You are a helpful assistant. Always respond in the same language as the user's message.
                         - NEVER use unescaped double quotes (") inside it.
                         - For book/movie titles, use «...», '...', or no quotes.
                         - Example: "message": "1. «1984» by George Orwell"
                         """
                      },
-                    {"role": "user", "content": user_text},
-                ]
+                ] + context + [{"role": "user", "content": user_text}]
 
         # Вызов pipeline для получения ответа
         out = pipe(messages, **generation_kwargs)
@@ -197,6 +211,7 @@ def get_chat_title(payload: MessageTitleRequest, api_key: str = Header(..., alia
                - For book/movie titles, use «...», '...', or no quotes.
                - Example: "message": "1. «1984» by George Orwell"
             9. Don't add ```json to your answer. Start your answer right away with {.
+            10. Always respond in the same language as the user's message.
 
             Examples:
             User: Сколько будет 2+2?
@@ -214,7 +229,7 @@ def get_chat_title(payload: MessageTitleRequest, api_key: str = Header(..., alia
         {"role": "user", "content": payload.message}
     ]
     generation_kwargs = {
-        "max_new_tokens": 150,
+        "max_new_tokens": 500,
         "temperature": 0.5,
         "do_sample": True,
     }
