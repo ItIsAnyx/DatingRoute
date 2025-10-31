@@ -25,4 +25,11 @@ public class ChatMapper {
     public ChatCreateResponse toChatCreateDto(Chat chat, MessageResponse messageResponse) {
         return new ChatCreateResponse(chat.getId(), chat.getTitle(), messageResponse);
     }
+
+    public Chat toEntity(ChatInfoResponse dto) {
+        return Chat.builder()
+                .id(dto.id())
+                .title(dto.title())
+                .build();
+    }
 }

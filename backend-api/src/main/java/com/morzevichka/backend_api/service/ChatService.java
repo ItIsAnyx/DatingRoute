@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -41,5 +42,22 @@ public class ChatService {
 
     public Chat getReferenceByChatId(Long chatId) {
         return chatRepository.getReferenceById(chatId);
+    }
+
+    public boolean updateChat(Chat chatEntity) {
+        Optional<Chat> existingChat = chatRepository.findById(chatEntity.getId());
+        if (existingChat.isPresent()) {
+            Chat chat = existingChat.get();
+            chat.setTitle(chatEntity.getTitle());
+            return false;
+        }
+
+        chatRepository.save(chatEntity);
+        return true;
+    }
+
+    public void deleteChat(Long id) {
+        Chat chat = getChatById(id);
+        chatRepository.delete(chat);
     }
 }

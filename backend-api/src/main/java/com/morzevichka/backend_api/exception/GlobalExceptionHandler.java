@@ -1,19 +1,18 @@
 package com.morzevichka.backend_api.exception;
 
-import io.jsonwebtoken.ExpiredJwtException;
+import com.morzevichka.backend_api.dto.error.DefaultErrorResponse;
+import com.morzevichka.backend_api.dto.error.ValidationErrorResponse;
+import com.morzevichka.backend_api.mapper.ErrorMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.web.error.ErrorAttributeOptions;
-import org.springframework.boot.web.servlet.error.DefaultErrorAttributes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.ServletWebRequest;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -22,23 +21,20 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
-    private final DefaultErrorAttributes defaultErrorAttributes;
+    private final ErrorMapper mapper;
 
-    private Map<String, Object> buildDefaultError(HttpServletRequest servletRequest, Throwable ex, HttpStatus status) {
-        final Map<String, Object> errorAttributes = defaultErrorAttributes.getErrorAttributes(
-                new ServletWebRequest(servletRequest),
-                ErrorAttributeOptions.defaults().excluding(ErrorAttributeOptions.Include.STACK_TRACE)
+    private DefaultErrorResponse buildDefaultError(HttpServletRequest servletRequest, Throwable ex, HttpStatus status) {
+        return new DefaultErrorResponse(
+                LocalDateTime.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                ex.getMessage(),
+                servletRequest.getRequestURI()
         );
-
-        errorAttributes.put("status", status.value());
-        errorAttributes.put("error", status.getReasonPhrase());
-        errorAttributes.put("message", ex.getMessage());
-        errorAttributes.put("path", servletRequest.getRequestURI());
-        return errorAttributes;
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> methodArgumentNotValidError(
+    public ResponseEntity<ValidationErrorResponse> methodArgumentNotValidError(
             MethodArgumentNotValidException ex,
             HttpServletRequest request
     ) {
@@ -53,39 +49,47 @@ public class GlobalExceptionHandler {
                         )
                 );
 
-        Map<String, Object> errorAttributes = buildDefaultError(request, ex, status);
-        errorAttributes.put("message", "Validation Failed");
-        errorAttributes.put("details", details);
+        DefaultErrorResponse defaultErrorResponse = buildDefaultError(request, ex, status);
+        defaultErrorResponse.setMessage("Validation Failed");
 
-        return ResponseEntity.status(status.value()).body(errorAttributes);
+        ValidationErrorResponse errorResponse = mapper.toValidationDto(defaultErrorResponse, details);
+
+        return ResponseEntity.status(status.value()).body(errorResponse);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> illegalArgumentError(
+    public ResponseEntity<DefaultErrorResponse> illegalArgumentError(
             IllegalArgumentException ex,
             HttpServletRequest request
     ) {
         final HttpStatus status = HttpStatus.BAD_REQUEST;
 
-        Map<String, Object> errorAttributes = buildDefaultError(request, ex, status);
+        DefaultErrorResponse errorResponse = buildDefaultError(request, ex, status);
 
-        return ResponseEntity.status(status.value()).body(errorAttributes);
+        return ResponseEntity.status(status.value()).body(errorResponse);
     }
 
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<Map<String, Object>> badCredentialsError(
-            BadCredentialsException ex,
+    @ExceptionHandler(ChatNotFoundException.class)
+    public ResponseEntity<DefaultErrorResponse> chatNotFoundError(
+            ChatNotFoundException ex,
             HttpServletRequest request
     ) {
-        final HttpStatus status = HttpStatus.UNAUTHORIZED;
+        final HttpStatus status = HttpStatus.NOT_FOUND;
 
-        Map<String, Object> errorAttributes = buildDefaultError(request, ex, status);
+        DefaultErrorResponse errorResponse = buildDefaultError(request, ex, status);
 
-        return ResponseEntity.status(status.value()).body(errorAttributes);
+        return ResponseEntity.status(status.value()).body(errorResponse);
     }
 
-    @ExceptionHandler(ExpiredJwtException.class)
-    public ResponseEntity<String> expiredJwtError() {
-        return ResponseEntity.status(401).body("JWT");
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<DefaultErrorResponse> generalError(
+            Exception ex,
+            HttpServletRequest request
+    ) {
+        final HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+
+        DefaultErrorResponse errorResponse = buildDefaultError(request, ex, status);
+
+        return ResponseEntity.status(status.value()).body(errorResponse);
     }
 }

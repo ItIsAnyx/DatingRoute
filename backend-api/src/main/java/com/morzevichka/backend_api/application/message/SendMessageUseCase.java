@@ -1,5 +1,6 @@
 package com.morzevichka.backend_api.application.message;
 
+import com.morzevichka.backend_api.client.AiClient;
 import com.morzevichka.backend_api.dto.ai.AiResponse;
 import com.morzevichka.backend_api.dto.message.MessageRequest;
 import com.morzevichka.backend_api.dto.message.MessageResponse;
@@ -11,7 +12,6 @@ import com.morzevichka.backend_api.mapper.MessageMapper;
 import com.morzevichka.backend_api.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
@@ -22,7 +22,7 @@ import java.util.concurrent.Executor;
 @RequiredArgsConstructor
 public class SendMessageUseCase {
 
-    private final AiClientService aiClientService;
+    private final AiClient aiClient;
     private final MessageMapper messageMapper;
     private final ContextService contextService;
     private final ChatService chatService;
@@ -41,7 +41,7 @@ public class SendMessageUseCase {
         );
         CompletableFuture<Message> aiMessageFuture = CompletableFuture.supplyAsync(
                 () -> {
-                    AiResponse aiResponse = aiClientService.sendMessageRequest(request.message(), context);
+                    AiResponse aiResponse = aiClient.sendMessageRequest(request.message(), context);
                     return messageService.createAiMessage(request.chatId(), user, aiResponse.message());
                 },
                 customExecutor

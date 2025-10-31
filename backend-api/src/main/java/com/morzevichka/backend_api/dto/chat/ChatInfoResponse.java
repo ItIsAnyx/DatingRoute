@@ -1,5 +1,10 @@
 package com.morzevichka.backend_api.dto.chat;
 
-public record ChatInfoResponse(Long id, String title) {
+import jakarta.validation.constraints.NotBlank;
 
-}
+public record ChatInfoResponse(
+        @NotBlank
+        Long id,
+        @NotBlank
+        String title
+) {}

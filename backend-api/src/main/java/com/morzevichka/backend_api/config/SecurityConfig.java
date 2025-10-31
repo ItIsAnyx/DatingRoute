@@ -1,10 +1,10 @@
 package com.morzevichka.backend_api.config;
 
+import com.morzevichka.backend_api.security.CustomAuthenticationEntryPoint;
 import com.morzevichka.backend_api.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -12,7 +12,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -22,11 +21,14 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationManager authenticationManager;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
     private static final String[] WHITE_LIST = {
             "/api/auth/**",
             "/error/**",
-            "/error"
+            "/error",
+            "/docs*/**",
+            "/swagger-ui*/**"
     };
 
     @Bean
@@ -43,7 +45,7 @@ public class SecurityConfig {
                 .authenticationManager(authenticationManager)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                        .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(new AccessDeniedHandlerImpl())
                 )
                 ;

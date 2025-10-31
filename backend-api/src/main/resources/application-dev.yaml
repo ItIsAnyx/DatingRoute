@@ -11,17 +11,17 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: validate
-
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
       timeout: 60000
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
 
   threads:
     virtual:
@@ -41,6 +41,13 @@ application:
       secret-key: ${JWT_SECRET_KEY}
       expiration: 900000
       refresh-expiration: 900000
+
+springdoc:
+  api-docs:
+    path: /docs
+  swagger-ui:
+    path: /docs
+    operations-sorter: method
 
 #logging:
 #  level:

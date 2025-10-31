@@ -1,5 +1,6 @@
 package com.morzevichka.backend_api.application.chat;
 
+import com.morzevichka.backend_api.client.AiClient;
 import com.morzevichka.backend_api.dto.ai.AiCreateResponse;
 import com.morzevichka.backend_api.dto.chat.ChatCreateRequest;
 import com.morzevichka.backend_api.dto.chat.ChatCreateResponse;
@@ -11,7 +12,6 @@ import com.morzevichka.backend_api.mapper.MessageMapper;
 import com.morzevichka.backend_api.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
@@ -23,7 +23,7 @@ import java.util.concurrent.Executor;
 public class CreateChatUseCase {
 
     private final UserService userService;
-    private final AiClientService aiClientService;
+    private final AiClient aiClient;
     private final MessageService messageService;
     private final MessageMapper messageMapper;
     private final ChatMapper chatMapper;
@@ -33,7 +33,7 @@ public class CreateChatUseCase {
 
     public ChatCreateResponse execute(ChatCreateRequest request) {
         User user = userService.getCurrentUser();
-        AiCreateResponse aiResponse = aiClientService.createChatRequest(request.message());
+        AiCreateResponse aiResponse = aiClient.createChatRequest(request.message());
         Chat chat = chatService.createAndSaveChat(aiResponse.title(), userService.getCurrentUser());
 
         CompletableFuture<Message> userMessageFuture = CompletableFuture.supplyAsync(
