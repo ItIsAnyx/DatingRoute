@@ -31,8 +31,9 @@ services:
     environment:
       - AI_SECRET_KEY=${AI_SECRET_KEY}
       - HF_MODEL=Qwen/Qwen2.5-1.5B-Instruct
-      - DEVICE=cpu
+      - DEVICE=auto
       - HF_TOKEN=${HF_TOKEN}
+      - MAX_CONTEXT_TOKENS=3000
     command: "python -m uvicorn ai:app --host 0.0.0.0 --port 8082"
     volumes:
       - "./python/models:/root/.cache/huggingface"
