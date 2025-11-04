@@ -122,6 +122,9 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
+
+const API_URL = '/api/auth'
 
 const router = useRouter()
 
@@ -162,20 +165,57 @@ const resetForm = () => {
 
 const handleSubmit = async () => {
   loading.value = true
-  
-  await new Promise(resolve => setTimeout(resolve, 1500))
-  
-  if (isLoginMode.value) {
-    console.log('Login data:', {
-      email: formData.value.email,
-      password: formData.value.password
-    })
-  } else {
-    console.log('Registration data:', formData.value)
+
+  try {
+    if (isLoginMode.value) {
+      // === Вход ===
+      const response = await axios.post(`${API_URL}/login`, {
+        email: formData.value.email,
+        password: formData.value.password
+      })
+
+      // Сохраняем токены
+      const { access_token, refresh_token } = response.data
+      localStorage.setItem('access_token', access_token)
+      localStorage.setItem('refresh_token', refresh_token)
+
+      alert('Вход выполнен успешно!')
+      router.push('/chats') // или на главную страницу
+    } else {
+      // === Регистрация ===
+      if (formData.value.password !== formData.value.confirmPassword) {
+        alert('Пароли не совпадают')
+        loading.value = false
+        return
+      }
+
+      const response = await axios.post(`${API_URL}/register`, {
+        email: formData.value.email,
+        login: formData.value.fullName, // в .md поле "login"
+        password: formData.value.password
+      })
+
+      // Сохраняем токены
+      const { access_token, refresh_token } = response.data
+      localStorage.setItem('access_token', access_token)
+      localStorage.setItem('refresh_token', refresh_token)
+
+      alert('Регистрация прошла успешно!')
+      router.push('/chats')
+    }
+  } catch (error) {
+    if (error.response) {
+      console.error('Ошибка:', error.response.data)
+      alert(`Ошибка: ${error.response.data.error || 'Что-то пошло не так'}`)
+    } else {
+      console.error('Ошибка запроса:', error)
+      alert('Сервер недоступен')
+    }
+  } finally {
+    loading.value = false
   }
-  
-  loading.value = false
 }
+
 
 </script>
 
