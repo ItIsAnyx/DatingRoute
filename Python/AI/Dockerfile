@@ -21,6 +21,7 @@ COPY --from=builder /wheels /wheels
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir --no-index --find-links=/wheels -r requirements.txt \
+	&& pip uninstall -y triton nvidia-* || true \
 	&& rm -rf /wheels /root/.cache/pip
 
 COPY . .

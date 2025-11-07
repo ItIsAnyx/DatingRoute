@@ -1,9 +1,10 @@
 fastapi
 uvicorn
-torch==2.9.0 --index-url https://download.pytorch.org/whl/cpu
 pydantic
 requests
 python-dotenv
 transformers
-huggingface_hub
 accelerate
+torch==2.9.0+cpu
+torchaudio==2.9.0+cpu
+--extra-index-url https://download.pytorch.org/whl/cpu

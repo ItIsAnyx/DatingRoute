@@ -4,15 +4,13 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
 from transformers import pipeline
-from huggingface_hub import login
 from json_converter import JSONConverter
 
 # Загрузка переменных из .env
 load_dotenv()
 AI_SECRET_KEY = os.getenv("AI_SECRET_KEY")
 HF_MODEL = os.getenv("HF_MODEL")
-DEVICE = os.getenv("DEVICE", "cpu")
-HF_TOKEN = os.getenv("HF_TOKEN")
+DEVICE = os.getenv("DEVICE")
 MAX_CONTEXT_TOKENS = int(os.getenv("MAX_CONTEXT_TOKENS"))
 
 app = FastAPI(title="Простые запрос-ответы к нейросети")
@@ -29,16 +27,6 @@ class MessageTitleResponse(BaseModel):
     title: str
     message: str
     context: list
-
-# Авторизация в Hugging Face
-if HF_TOKEN:
-    try:
-        login(token=HF_TOKEN)
-        print("[auth] Авторизация Hugging Face прошла успешно.")
-    except Exception as e:
-        print(f"[auth] Ошибка при авторизации HF: {e}")
-else:
-    print("[auth] Переменная HF_TOKEN не найдена. Модель может быть недоступна.")
 
 # Функция проверки ключа
 def verify_key(api_key: Optional[str]):

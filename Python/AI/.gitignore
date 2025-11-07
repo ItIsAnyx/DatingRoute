@@ -1,2 +1,3 @@
 .env
 __pycache__
+Qwen2.5-1.5B-Instruct/model.safetensors

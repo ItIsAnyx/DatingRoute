@@ -35,14 +35,6 @@ services:
       - HF_TOKEN=${HF_TOKEN}
       - MAX_CONTEXT_TOKENS=3000
     command: "python -m uvicorn ai:app --host 0.0.0.0 --port 8082"
-    volumes:
-      - "./python/models:/root/.cache/huggingface"
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: ["gpu"]
-              driver: nvidia
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
       interval: 1m

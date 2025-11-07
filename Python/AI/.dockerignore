@@ -3,8 +3,11 @@ __pycache__/
 *.pyo
 *.pyd
 *.log
+*.pt
+*.gguf
 .env
 .cache/
+.git/
 data/
 outputs/
 checkpoints/
