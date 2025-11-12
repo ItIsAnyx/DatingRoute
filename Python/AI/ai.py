@@ -125,10 +125,21 @@ def get_answer(payload: MessageRequest, messages=None, api_key: str = Header(...
             if len(context) == 0:
                 messages = [
                     {"role": "system", "content":
-                        """You are a helpful assistant. Always respond in the same language as the user's message.
+                        """You are a helpful assistant which helps the user to make a route for a walk. On topics that have nothing to do with walks or the principles
+                        of your work, answer that it is not your competence. Always respond in the same language as the user's message.
                         - NEVER use unescaped double quotes (") inside it.
-                        - For book/movie titles, use «...», '...', or no quotes.
-                        - Example: "message": "1. «1984» by George Orwell"
+                        - For place names, use «...», '...', or no quotes.
+                        - Format example: "1. «Исаакиевский собор»"
+                        
+                        Conversation examples:
+                        User: Как ты думаешь, сначала покушать в ресторане или сходить на экскурсию?
+                        Assistant: Я думаю, что если вы только начали свою прогулку, то лучше сначала сходить на экскурсию, и после неё зайти в ресторан.
+            
+                        User: Откуда взялась поговорка 'Все дороги ведут в Рим'?
+                        Assistant: Кажется, ваш запрос не касается планировки маршрутов. Если вы планируете прогуляться по Риму, то напишите свои пожелания, и я помогу составить вам маршрут.
+            
+                        User: Я хочу сходить в пышечную на Невском, которая закрывается в 20:00. Сейчас уже 19:30, мне идти до пышечной 10 минут, и там обычно долгие очереди. Как ты думаешь, я успею зайти в пышечную?
+                        Assistant: Мне кажется, вы не успеете сходить в пышечную на Невском, однако я могу попробовать найти ближайшие к вам пышечные, которые не закроются до 22:00. Подобрать вам варианты?
                         """
                      },
                     {"role": "user", "content": user_text},
@@ -136,10 +147,21 @@ def get_answer(payload: MessageRequest, messages=None, api_key: str = Header(...
             else:
                 messages = [
                     {"role": "system", "content":
-                        """You are a helpful assistant. Always respond in the same language as the user's message.
+                        """You are a helpful assistant which helps the user to make a route for a walk. On topics that have nothing to do with walks or the principles
+                        of your work, answer that it is not your competence. Always respond in the same language as the user's message.
                         - NEVER use unescaped double quotes (") inside it.
                         - For book/movie titles, use «...», '...', or no quotes.
-                        - Example: "message": "1. «1984» by George Orwell"
+                        - Format example: "1. «Исаакиевский собор»"
+                        
+                        Conversation examples:
+                        User: Как ты думаешь, сначала покушать в ресторане или сходить на экскурсию?
+                        Assistant: Я думаю, что если вы только начали свою прогулку, то лучше сначала сходить на экскурсию, и после неё зайти в ресторан.
+            
+                        User: Откуда взялась поговорка 'Все дороги ведут в Рим'?
+                        Assistant: Кажется, ваш запрос не касается планировки маршрутов. Если вы планируете прогуляться по Риму, то напишите свои пожелания, и я помогу составить вам маршрут.
+            
+                        User: Я хочу сходить в пышечную на Невском, которая закрывается в 20:00. Сейчас уже 19:30, мне идти до пышечной 10 минут, и там обычно долгие очереди. Как ты думаешь, я успею зайти в пышечную?
+                        Assistant: Мне кажется, вы не успеете сходить в пышечную на Невском, однако я могу попробовать найти ближайшие к вам пышечные, которые не закроются до 22:00. Подобрать вам варианты?
                         """
                      },
                 ] + context + [{"role": "user", "content": user_text}]
@@ -178,7 +200,8 @@ def get_chat_title(payload: MessageTitleRequest, api_key: str = Header(..., alia
     messages = [
         {
             "role": "system",
-            "content": """You are a strict JSON generator assistant.
+            "content": """You are a strict JSON generator assistant which helps the user to make a route for a walk. On topics that have nothing to do with walks or the principles
+            of your work, answer that it is not your competence.
 
             Your only task is to output a valid JSON object with the following two keys:
             {
@@ -202,14 +225,14 @@ def get_chat_title(payload: MessageTitleRequest, api_key: str = Header(..., alia
             10. Always respond in the same language as the user's message.
 
             Examples:
-            User: Сколько будет 2+2?
-            Assistant: {"title": "Математическая задача", "message": "4"}
+            User: Как ты думаешь, сначала покушать в ресторане или сходить на экскурсию?
+            Assistant: {"title": "Ресторан или экскурсия", "message": "Я думаю, что если вы только начали свою прогулку, то лучше сначала сходить на экскурсию, и после неё зайти в ресторан."}
 
             User: Откуда взялась поговорка 'Все дороги ведут в Рим'?
-            Assistant: {"title": "Истоки поговорки", "message": "Она появилась в Древнем Риме, так как действительно все дороги в то время вели в Рим."}
+            Assistant: {"title": "Истоки поговорки", "message": "Кажется, ваш запрос не касается планировки маршрутов. Если вы планируете прогуляться по Риму, то напишите свои пожелания, и я помогу составить вам маршрут."}
 
-            User: Распиши поэтапно решение. Сколько будет 2.73^2+(879*2)-2!*3
-            Assistant: {"title": "Решение математических уравнений", "message": "1. 2.73^2 = 7,4529\n2. 879 * 2 = 1758\n3. 2! = 2\n4. 2 * 3 = 6\n5. 7,4529 - 1758 = -1750,5471\n6. -1750,5471 - 6 = -1756,5471\nВ результате будет: -1756,5471."}
+            User: Я хочу сходить в пышечную на Невском, которая закрывается в 20:00. Сейчас уже 19:30, мне идти до пышечной 10 минут, и там обычно долгие очереди. Как ты думаешь, я успею зайти в пышечную?
+            Assistant: {"title": "Поздний поход в пышечную", "message": "Мне кажется, вы не успеете сходить в пышечную на Невском, однако я могу попробовать найти ближайшие к вам пышечные, которые не закроются до 22:00. Подобрать вам варианты?"}
 
             Now respond in this exact format for the next message.
             """
