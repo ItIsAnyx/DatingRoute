@@ -2,7 +2,10 @@
   <section class="hero-section">
     <div class="hero-container">
       <div class="hero-content">
-        <h1 class="hero-title">
+        <h1>
+          DatingRoute
+        </h1>
+        <h1>
           Планировать Отдых Легко
         </h1>
         <p class="hero-subtitle">
@@ -14,7 +17,7 @@
           <p class="feature">Ваши желания + наш ИИ = идеально спланированный отдых.</p>
         </div>
         <button class="cta-button">
-          Приступим →
+          Приступим  <b>→</b>
         </button>
       </div>
       <div class="hero-image-container">
@@ -25,7 +28,7 @@
 </template>
 
 <script setup>
-import homeImage from '@/assets/home.png'
+import homeImage from '@/assets/home.svg'
 </script>
 
 <style scoped>
@@ -33,7 +36,7 @@ import homeImage from '@/assets/home.png'
   margin: 0 auto;
   max-width: 1200px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: black;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -54,6 +57,16 @@ import homeImage from '@/assets/home.png'
   flex: 1;
   min-width: 0; 
   color: white;
+}
+
+.hero-content > h1{
+  color: white;
+  font-size: 3rem;
+  line-height: 3.5rem;
+}
+
+.hero-content > h1:first-child{
+  color: #00ADB5;
 }
 
 .hero-image-container {
@@ -78,8 +91,9 @@ import homeImage from '@/assets/home.png'
 }
 
 .hero-subtitle {
-  font-size: 1.25rem;
-  margin-bottom: 2rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1rem;
+  margin: 1rem 0 0.5rem 0;
   opacity: 0.9;
   line-height: 1.6;
 }
@@ -89,39 +103,53 @@ import homeImage from '@/assets/home.png'
 }
 
 .feature {
-  font-size: 1.1rem;
-  margin-bottom: 1rem;
+   color: rgba(255, 255, 255, 0.5);
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
   opacity: 0.8;
   line-height: 1.5;
 }
 
 .cta-button {
-  background: #ff6b6b;
-  color: white;
+  background: white;
   border: none;
   padding: 1rem 2.5rem;
   font-size: 1.1rem;
   border-radius: 50px;
   cursor: pointer;
   transition: all 0.3s;
-  font-weight: 600;
+  color: rgb(0, 0, 0);
+}
+
+.cta-button b{
+  margin-left: 10px;
 }
 
 .cta-button:hover {
-  background: #ff5252;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+  background: #00ADB5;
+  color: white;
 }
 
 @media (max-width: 1200px) {
   .hero-container {
     gap: 40px;
-    padding: 0 30px;
+    padding: 0 100px;
   }
+
   
-  .hero-title {
-    font-size: 3rem;
+  .hero-content > h1{
+    font-size: 2rem;
+    line-height: 2.5rem;
   }
+
+  .hero-content p{
+    font-size: 0.8rem;
+  }
+
+  .cta-button {
+    font-size: 1rem;
+  }
+
 }
 
 @media (max-width: 1024px) {
@@ -145,22 +173,12 @@ import homeImage from '@/assets/home.png'
 }
 
 @media (max-width: 768px) {
-  .hero-section {
-    padding: 60px 0 30px;
-  }
   
   .hero-container {
     padding: 0 20px;
     gap: 30px;
   }
   
-  .hero-title {
-    font-size: 2.5rem;
-  }
-  
-  .hero-subtitle {
-    font-size: 1.1rem;
-  }
   
   .hero-image {
     max-width: 300px;
@@ -168,17 +186,12 @@ import homeImage from '@/assets/home.png'
 }
 
 @media (max-width: 480px) {
-  .hero-title {
-    font-size: 2rem;
-  }
+
   
   .hero-container {
     padding: 0 15px;
   }
   
-  .cta-button {
-    padding: 0.875rem 2rem;
-    font-size: 1rem;
-  }
+
 }
 </style>

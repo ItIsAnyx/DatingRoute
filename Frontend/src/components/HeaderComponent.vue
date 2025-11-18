@@ -74,9 +74,8 @@ const logout = () => {
 
 <style scoped>
 .header {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid #e5e7eb;
   position: fixed;
   top: 0;
   left: 0;
@@ -97,7 +96,7 @@ const logout = () => {
 .logo {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #667eea;
+  color: #ffffff;
   z-index: 1001;
   cursor: pointer;
 }
@@ -105,7 +104,7 @@ const logout = () => {
 .nav {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 3rem;
 }
 
 .nav-links {
@@ -115,14 +114,14 @@ const logout = () => {
 
 .nav-link {
   text-decoration: none;
-  color: #4a5568;
-  font-weight: 500;
+  color: #ffffff;
   transition: color 0.3s;
+  font-size: 14px;
 }
 
 .nav-link:hover,
 .nav-link.active {
-  color: #667eea;
+  color: #00ADB5;
 }
 
 .auth-buttons {
@@ -131,24 +130,25 @@ const logout = () => {
 }
 
 .btn-login {
-  padding: 0.5rem 1.25rem;
-  border: 1px solid #667eea;
-  background: transparent;
-  color: #667eea;
+  border: 1px solid #00ADB5;
   border-radius: 6px;
+  padding: 0.5rem 1.25rem;
+  background: transparent;
+  color: #00ADB5;
   cursor: pointer;
   transition: all 0.3s;
 }
 
 .btn-login:hover {
-  background: #667eea;
   color: white;
+  background: #00747a;
+  border: 1px solid #00747a;
 }
 
 .btn-register {
   padding: 0.5rem 1.25rem;
   border: none;
-  background: #667eea;
+  background: #00ADB5;
   color: white;
   border-radius: 6px;
   cursor: pointer;
@@ -156,7 +156,7 @@ const logout = () => {
 }
 
 .btn-register:hover {
-  background: #5a67d8;
+  background: #00747a;
 }
 
 .user-menu {
@@ -229,14 +229,14 @@ const logout = () => {
     width: 80%;
     max-width: 300px;
     height: 100vh;
-    background: white;
+    background: rgba(0, 0, 0, 0.95);
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
     padding: 80px 2rem 2rem;
     gap: 0;
     transition: right 0.3s ease;
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    box-shadow: -100px 0px 100px rgba(0, 0, 0, 0.5);
   }
 
   .nav-links {
