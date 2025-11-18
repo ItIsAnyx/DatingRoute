@@ -3,7 +3,7 @@ package com.morzevichka.backend_api.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.morzevichka.backend_api.dto.error.DefaultErrorResponse;
+import com.morzevichka.backend_api.api.dto.error.DefaultErrorResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;

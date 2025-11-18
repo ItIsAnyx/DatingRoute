@@ -8,14 +8,11 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && \
 	pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 
-
 FROM python:3.12.1
 WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
 	PYTHONUNBUFFERED=1 \
-	TRANSFORMERS_CACHE=/root/.cache/huggingface \
-	HF_HOME=/root/.cache/huggingface
 
 COPY --from=builder /wheels /wheels
 COPY requirements.txt .
