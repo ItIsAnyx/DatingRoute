@@ -87,10 +87,6 @@
               >
             </div>
 
-            <div class="forgot-password" v-if="isLoginMode">
-              <a href="#" class="forgot-link">Забыли пароль?</a>
-            </div>
-
             <div class="divider"></div>
 
             <button type="submit" class="btn-submit" :disabled="loading">
@@ -222,15 +218,15 @@ const handleSubmit = async () => {
 <style scoped>
 .auth-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: black;
 }
 
 .header {
   display: flex;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.95);
+  background: #191919;
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: none;
   position: fixed;
   top: 0;
   left: 0;
@@ -254,7 +250,7 @@ const handleSubmit = async () => {
 .logo {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #667eea;
+  color: #ffffff;
   cursor: pointer;
 }
 
@@ -309,7 +305,7 @@ const handleSubmit = async () => {
 
 .btn-register:hover,
 .btn-register.active {
-  background: #5a67d8;
+  background: #00acb536;
 }
 
 .main-content {
@@ -321,7 +317,7 @@ const handleSubmit = async () => {
 }
 
 .auth-card {
-  background: white;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   padding: 2.5rem;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
@@ -368,7 +364,7 @@ const handleSubmit = async () => {
 .title {
   font-size: 1.75rem;
   font-weight: bold;
-  color: #1a202c;
+  color: white;
   margin-bottom: 0.5rem;
 }
 
@@ -392,23 +388,23 @@ const handleSubmit = async () => {
 
 .form-label {
   font-weight: 500;
-  color: #2d3748;
+  color: #ffffff;
   font-size: 0.9rem;
 }
 
 .form-input {
   padding: 0.75rem 1rem;
-  border: 2px solid #e2e8f0;
+  border: none;
   border-radius: 8px;
   font-size: 1rem;
   transition: all 0.3s;
-  background: white;
+  background: #71809628;
+  color: white;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 0 0 3px #00acb527;
 }
 
 .form-input::placeholder {
@@ -421,7 +417,7 @@ const handleSubmit = async () => {
 }
 
 .forgot-link {
-  color: #667eea;
+  color: #00ADB5;
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 500;
@@ -429,7 +425,7 @@ const handleSubmit = async () => {
 }
 
 .forgot-link:hover {
-  color: #5a67d8;
+  color: #00acb528;
   text-decoration: underline;
 }
 
@@ -440,7 +436,7 @@ const handleSubmit = async () => {
 }
 
 .btn-submit {
-  background: #667eea;
+  background: #00ADB5;
   color: white;
   border: none;
   padding: 1rem 2rem;
@@ -453,9 +449,7 @@ const handleSubmit = async () => {
 }
 
 .btn-submit:hover:not(:disabled) {
-  background: #5a67d8;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  background: #006b70;
 }
 
 .btn-submit:disabled {
@@ -493,7 +487,7 @@ const handleSubmit = async () => {
 }
 
 .switch-link {
-  color: #667eea;
+  color: #00ADB5;
   text-decoration: none;
   font-weight: 500;
   margin-left: 0.5rem;
@@ -501,7 +495,7 @@ const handleSubmit = async () => {
 }
 
 .switch-link:hover {
-  color: #5a67d8;
+  color: #00acb552;
   text-decoration: underline;
 }
 
