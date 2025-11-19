@@ -28,6 +28,12 @@ class MessageTitleResponse(BaseModel):
     message: str
     context: list
 
+class SummarizeRequest(BaseModel):
+    context: list
+
+class ResultSummarization(BaseModel):
+    points: list
+
 # Функция проверки ключа
 def verify_key(api_key: Optional[str]):
     if not AI_SECRET_KEY:
@@ -300,3 +306,61 @@ def get_chat_title(payload: MessageTitleRequest, api_key: str = Header(..., alia
     print(f"\njson_result:\n{json_result}\ncontext: {context}")
     json_result["context"] = context
     return json_result
+
+@app.post("/api/response/summarize", response_model=ResultSummarization)
+def summarize(payload: SummarizeRequest, api_key = Header(..., alias="AI_SECRET_KEY")):
+    verify_key(api_key)
+    messages = ([
+    {
+        "role": "system",
+        "content": (
+            "You extract the actual final list of route points from a dialogue.\n"
+            "Rules:\n"
+            "1. Only include places the user still wants to visit in the end.\n"
+            "2. If the user says they don't want a place, remove it completely.\n"
+            "3. If the user changes their mind, use the newest preference.\n"
+            "4. A route point is: place, address, street, building, park, cafe, museum.\n"
+            "5. Ignore assistant suggestions unless the user confirmed them.\n"
+            "6. Output only the final route as a semicolon-separated list."
+
+        )
+    }] + payload.context +
+    [
+        {
+            "role": "user",
+            "content": "List all route points discussed in the conversation. Only the final actual route."
+        }
+    ])
+
+    generation_kwargs = {
+        "max_new_tokens": 350,
+        "temperature": 0.1,
+        "do_sample": True,
+    }
+
+    out = pipe(messages, **generation_kwargs)
+    print(out)
+    # Пробуем извлечь текст
+    try:
+        if isinstance(out, list) and len(out) > 0:
+            first = out[0]
+            print(first)
+            text = first['generated_text'][-1]['content'] or first.get("generated_text") or first.get("text") or str(first) or str(first[0])
+        else:
+            text = str(out)
+
+        # Защита от эхо, если модель вернула prompt + ответ. Тогда prompt удалим из начала ответа
+        if text.strip().startswith("Summarize the text by building a list of the points on my route that we discussed. Reply in the language of the previous messages.".strip()):
+            text = text.strip()[len("Summarize the text by building a list of the points on my route that we discussed. Reply in the language of the previous messages.".strip()):].strip()
+
+        # Если пустой текст - ставим заглушку
+        if not text:
+            text = "..."
+
+        text = text.split(";")
+        for element in range(len(text)):
+            text[element] = text[element].strip()
+        return {"points": text}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Generation error: {e}")
