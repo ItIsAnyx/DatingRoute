@@ -18,7 +18,7 @@ public class JpaUserRepositoryAdapter implements UserRepository {
 
     public User getByEmail(String email) {
         return userJpaMapper.toDomain(
-                jpa.getByEmail(email).orElseThrow(() -> new UserNotFoundException("User with " + email + " not found"))
+                jpa.getByEmail(email).orElseThrow(() -> new UserNotFoundException(email))
         );
     }
 

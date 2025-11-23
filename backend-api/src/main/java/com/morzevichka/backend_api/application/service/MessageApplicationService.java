@@ -59,15 +59,14 @@ public class MessageApplicationService {
     }
 
     private Message createMessage(Chat chat, User user, String content, MessageType type) {
-
-        messageService.validateMessage(user, chat, content, type);
-
         Message message = Message.builder()
                 .content(content)
                 .type(type)
                 .user(user)
                 .chat(chat)
                 .build();
+
+        messageService.validateMessage(user, chat, message);
 
         return messageRepository.save(message);
     }
