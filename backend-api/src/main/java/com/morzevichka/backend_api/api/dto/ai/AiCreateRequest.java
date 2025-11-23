@@ -1,3 +1,8 @@
 package com.morzevichka.backend_api.api.dto.ai;
 
-public record AiCreateRequest(String message) {}
+import jakarta.validation.constraints.NotBlank;
+
+public record AiCreateRequest(
+        @NotBlank
+        String message
+) {}
