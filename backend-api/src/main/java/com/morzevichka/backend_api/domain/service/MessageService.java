@@ -1,10 +1,10 @@
 package com.morzevichka.backend_api.domain.service;
 
 import com.morzevichka.backend_api.domain.model.Chat;
+import com.morzevichka.backend_api.domain.model.Message;
 import com.morzevichka.backend_api.domain.model.User;
-import com.morzevichka.backend_api.domain.value.MessageType;
 import com.morzevichka.backend_api.infrastructure.exception.message.MessageLengthException;
-import com.morzevichka.backend_api.infrastructure.exception.message.UserChatMismatchException;
+import com.morzevichka.backend_api.infrastructure.exception.chat.UserChatMismatchException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,18 +13,13 @@ import org.springframework.stereotype.Service;
 public class MessageService {
 
     private static final int MAX_MESSAGE_LENGTH = 500;
+    private final ChatService chatService;
 
-    public void validateMessage(User user, Chat chat, String content, MessageType type) {
-        if (!isUserInChat(user, chat)) {
-            throw new UserChatMismatchException(user.getEmail());
+    public void validateMessage(User user, Chat chat, Message message) {
+        chatService.isUserInChat(user.getId(), chat.getUser().getId());
+
+        if (message.getContent().length() > MAX_MESSAGE_LENGTH) {
+            throw new MessageLengthException(message.getContent().length(), MAX_MESSAGE_LENGTH);
         }
-
-        if (content.length() > MAX_MESSAGE_LENGTH) {
-            throw new MessageLengthException(String.valueOf(content.length()));
-        }
-    }
-
-    public boolean isUserInChat(User user, Chat chat) {
-        return user.getId().equals(chat.getUser().getId());
     }
 }

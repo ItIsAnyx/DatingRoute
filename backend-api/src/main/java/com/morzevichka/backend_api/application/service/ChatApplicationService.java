@@ -1,8 +1,11 @@
 package com.morzevichka.backend_api.application.service;
 
+import com.morzevichka.backend_api.api.dto.ai.AiSummarizeResponse;
 import com.morzevichka.backend_api.domain.model.Chat;
+import com.morzevichka.backend_api.domain.model.Context;
 import com.morzevichka.backend_api.domain.model.User;
 import com.morzevichka.backend_api.domain.repository.ChatRepository;
+import com.morzevichka.backend_api.infrastructure.client.AiClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +17,7 @@ public class ChatApplicationService {
 
     private final UserApplicationService userApplicationService;
     private final ChatRepository chatRepository;
+    private final AiClient aiClient;
 
     public List<Chat> getUserChats() {
         User user = userApplicationService.getCurrentUser();
@@ -32,5 +36,9 @@ public class ChatApplicationService {
                 .build();
 
         return chatRepository.save(chat);
+    }
+
+    public AiSummarizeResponse summarize(Context context) {
+        return aiClient.summarizeRequest(context.getInnerContexts());
     }
 }

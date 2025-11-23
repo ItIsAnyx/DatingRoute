@@ -5,12 +5,11 @@ import com.morzevichka.backend_api.domain.model.Context;
 import com.morzevichka.backend_api.domain.repository.ContextRepository;
 import com.morzevichka.backend_api.domain.service.ContextService;
 import com.morzevichka.backend_api.domain.value.InnerContext;
-import com.morzevichka.backend_api.infrastructure.exception.ContextNotFoundException;
+import com.morzevichka.backend_api.infrastructure.exception.context.ContextNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -30,6 +29,7 @@ public class ContextApplicationService {
 
         try {
             context = getContext(chat.getId());
+            context.setInnerContexts(innerContext);
         } catch (ContextNotFoundException e) {
             context = Context.builder().chat(chat).innerContexts(innerContext).build();
         }

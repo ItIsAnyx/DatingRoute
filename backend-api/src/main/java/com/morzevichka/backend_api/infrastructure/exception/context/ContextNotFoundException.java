@@ -1,4 +1,6 @@
-package com.morzevichka.backend_api.infrastructure.exception;
+package com.morzevichka.backend_api.infrastructure.exception.context;
+
+import com.morzevichka.backend_api.infrastructure.exception.NotFoundException;
 
 public class ContextNotFoundException extends NotFoundException {
     public ContextNotFoundException(Long id) {

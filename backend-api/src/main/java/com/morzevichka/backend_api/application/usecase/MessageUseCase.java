@@ -15,9 +15,9 @@ import com.morzevichka.backend_api.domain.model.Chat;
 import com.morzevichka.backend_api.domain.model.Context;
 import com.morzevichka.backend_api.domain.model.Message;
 import com.morzevichka.backend_api.domain.model.User;
+import com.morzevichka.backend_api.domain.service.ChatService;
 import com.morzevichka.backend_api.domain.value.InnerContext;
 import com.morzevichka.backend_api.infrastructure.client.AiClient;
-import com.morzevichka.backend_api.infrastructure.exception.ContextNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -39,6 +39,7 @@ public class MessageUseCase {
     private final AiClient aiClient;
     private final ContextApplicationService contextApplicationService;
     private final MessageMapper messageMapper;
+    private final ChatService chatService;
 
     public PageableMessageResponse getPageableMessages(Long chatId, Pageable pageable) {
         Page<Message> messagesPage = messageApplicationService.findAllByChatId(chatId, pageable);
@@ -72,8 +73,9 @@ public class MessageUseCase {
         AiCreateResponse ai = aiClient.createChatRequest(cmd.content());
         log.info("Response from AI, title: {}, text: {}, context: {}", ai.getTitle(), ai.getMessage(), ai.getContext());
 
+        chatService.isTitleEmpty(ai.getTitle());
+
         Chat chat = chatApplicationService.createChat(ai.getTitle(), cmd.user());
-        log.info("{}", chat);
         log.info("Chat was created, id: {}, title: {}, userId: {}", chat.getId(), chat.getTitle(), chat.getUser().getId());
 
         return saveMessagesAndContext(chat, cmd.user(), ai.getContext(), cmd.content(), ai.getMessage());
@@ -81,7 +83,12 @@ public class MessageUseCase {
 
     private MessageResponse sendExistingChat(SendMessageCommand cmd) {
         Chat chat = chatApplicationService.getChat(cmd.chatId());
+
+        chatService.isUserInChat(cmd.user().getId(), chat.getUser().getId());
+
         Context context = contextApplicationService.getContext(chat.getId());
+
+        log.info("Context: {}", context.getInnerContexts());
 
         AiResponse ai = aiClient.sendMessageRequest(cmd.content(), context);
         log.info("Response from AI, text: {}, context: {}", ai.getMessage(), ai.getContext());

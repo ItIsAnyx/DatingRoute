@@ -1,5 +1,6 @@
 package com.morzevichka.backend_api.api.rest;
 
+import com.morzevichka.backend_api.api.dto.ai.AiSummarizeResponse;
 import com.morzevichka.backend_api.api.dto.chat.ChatCreateRequest;
 import com.morzevichka.backend_api.api.dto.chat.ChatCreateResponse;
 import com.morzevichka.backend_api.api.dto.chat.ChatResponse;
@@ -29,7 +30,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/chats")
+@RequestMapping(value = "/api/chats", produces = "application/json")
 @RequiredArgsConstructor
 @Tag(name = "chat")
 public class RestChatController {
@@ -37,7 +38,7 @@ public class RestChatController {
     private final ChatUseCase chatUseCase;
     private final MessageUseCase messageUseCase;
 
-    @GetMapping(headers = "Authorization", produces = "application/json")
+    @GetMapping(headers = "Authorization")
     @Operation(summary = "Gets user's chats")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Found chats"),
@@ -49,7 +50,7 @@ public class RestChatController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping(headers = "Authorization", consumes = "application/json", produces = "application/json")
+    @PostMapping(headers = "Authorization", consumes = "application/json")
     @Operation(summary = "Creates a chat")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Chat was created"),
@@ -64,7 +65,7 @@ public class RestChatController {
         return ResponseEntity.created(location).body(response);
     }
 
-    @PutMapping(value = "/{id}", headers = "Authorization", consumes = "application/json", produces = "application/json")
+    @PutMapping(value = "/{id}", headers = "Authorization", consumes = "application/json")
     @Operation(summary = "Updates an existing chat")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Chat was updated"),
@@ -101,7 +102,7 @@ public class RestChatController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping(value = "/{id}/messages", headers = "Authorization", produces = "application/json")
+    @GetMapping(value = "/{chatId}/messages", headers = "Authorization")
     @Operation(summary = "Get messages by chat")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Found messages"),
@@ -111,11 +112,25 @@ public class RestChatController {
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = DefaultErrorResponse.class))})
     })
     public ResponseEntity<PageableMessageResponse> getPageableChatMessages(
-            @PathVariable Long id,
+            @PathVariable Long chatId,
             @PageableDefault(size = 20, sort = "sendDate", direction = Sort.Direction.ASC)
             @ParameterObject Pageable pageable
     ) {
-        PageableMessageResponse response = messageUseCase.getPageableMessages(id, pageable);
+        PageableMessageResponse response = messageUseCase.getPageableMessages(chatId, pageable);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(value = "/{chatId}/summary", headers = "Authorization")
+    @Operation(summary = "Get points from chat history")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Found messages"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = DefaultErrorResponse.class))}),
+            @ApiResponse(responseCode = "404", description = "Chat was not found",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = DefaultErrorResponse.class))})
+    })
+    public ResponseEntity<AiSummarizeResponse> summarize(@PathVariable Long chatId) {
+        AiSummarizeResponse response = chatUseCase.summarize(chatId);
         return ResponseEntity.ok(response);
     }
 
