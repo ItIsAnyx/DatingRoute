@@ -3,6 +3,6 @@ package com.morzevichka.backend_api.api.dto.chat;
 import jakarta.validation.constraints.NotBlank;
 
 public record ChatCreateRequest(
-        @NotBlank
+        @NotBlank(message = "Поле message пустое")
         String message
 ) {}

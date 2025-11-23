@@ -122,7 +122,7 @@ public class RestChatController {
     @PostMapping("/send")
     @Operation(summary = "send a message (temp)")
     @Deprecated
-    public ResponseEntity<MessageResponse> sendMessage(@RequestBody MessageRequest request) {
+    public ResponseEntity<MessageResponse> sendMessage(@RequestBody @Valid MessageRequest request) {
         MessageResponse response = messageUseCase.send(request);
         return ResponseEntity.ok(response);
     }
