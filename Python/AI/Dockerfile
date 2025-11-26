@@ -12,7 +12,7 @@ FROM python:3.12.1
 WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-	PYTHONUNBUFFERED=1 \
+	PYTHONUNBUFFERED=1
 
 COPY --from=builder /wheels /wheels
 COPY requirements.txt .
