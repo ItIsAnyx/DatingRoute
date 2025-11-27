@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Маршрут</title>
+
+  <style>
+    html,body,#map { height:100%; margin:0; padding:0; }
+    #map { width:100%; height:100vh; }
+  </style>
+
+  <script>
+    // Глобальные переменные карты
+    let map, multiRoute;
+
+    // Загружаем ключ API из backend
+    async function loadYandexMaps() {
+      const res = await fetch("/api/config/maps-key");
+      const { key } = await res.json();
+
+      const script = document.createElement("script");
+      script.src = `https://api-maps.yandex.ru/2.1/?apikey=${key}&lang=ru_RU`;
+      script.onload = () => ymaps.ready(init);
+      script.onerror = () => console.error("Не удалось загрузить Yandex Maps");
+      document.head.appendChild(script);
+    }
+
+    loadYandexMaps();
+
+    // Инициализация карты
+    function init() {
+      map = new ymaps.Map("map", {
+        center: [55.751574, 37.573856],
+        zoom: 11,
+        controls: ['zoomControl']
+      });
+
+      updateRoute(); // сразу же строим маршрут
+    }
+
+    // Загружаем маршрут от backend и строим его
+    async function updateRoute() {
+      try {
+        const response = await fetch("/api/route/latest");
+        const routeJson = await response.json();
+        buildRouteFromJson(routeJson);
+      } catch (error) {
+        console.error("Ошибка загрузки маршрута:", error);
+      }
+    }
+
+    // Строим маршрут на карте
+    function buildRouteFromJson(json) {
+      if (!json || !json.points || json.points.length === 0) {
+        console.warn("Маршрут пустой или некорректный");
+        return;
+      }
+
+      const referencePoints = json.points.map(
+        p => p.request || p.coords.join(',')
+      );
+
+      if (multiRoute) {
+        map.geoObjects.remove(multiRoute);
+      }
+
+      multiRoute = new ymaps.multiRouter.MultiRoute(
+        {
+          referencePoints: referencePoints,
+          params: {
+            routingMode: json.params?.routingMode || "pedestrian"
+          }
+        },
+        {
+          boundsAutoApply: true
+        }
+      );
+
+      map.geoObjects.add(multiRoute);
+    }
+  </script>
+</head>
+
+<body>
+  <div id="map"></div>
+</body>
+</html>
