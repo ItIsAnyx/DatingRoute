@@ -32,15 +32,17 @@ server:
 
 service:
   ai:
-    url: http://localhost:8082
+    url: ${AI_SERVICE_URL:http://localhost:8082}
     secret-key: ${AI_SECRET_KEY}
+  map:
+    url: ${MAP_SERVICE_URL:http://localhost:8083}
 
 application:
   security:
     jwt:
       secret-key: ${JWT_SECRET_KEY}
-      access-expiration: 3600000
-      refresh-expiration: 900000
+      access-expiration: 86400000
+      refresh-expiration: 604800000
 
 springdoc:
   api-docs:

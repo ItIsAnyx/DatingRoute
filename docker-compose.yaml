@@ -16,6 +16,8 @@ services:
       - REDIS_HOST=cache
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - AI_SERVICE_URL=http://ai:8082
+      - MAP_SERVICE_URL=http://map:8083
     depends_on:
       database:
         condition: service_healthy
@@ -32,13 +34,23 @@ services:
       - AI_SECRET_KEY=${AI_SECRET_KEY}
       - HF_MODEL=./Qwen2.5-1.5B-Instruct
       - DEVICE=auto
-      - MAX_CONTEXT_TOKENS=3000
+      - MAX_CONTEXT_TOKENS=3000    
     command: "python -m uvicorn ai:app --host 0.0.0.0 --port 8082"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/api/health"]
       interval: 1m
       timeout: 30s
       retries: 3
+
+  map:
+    build: ./python/Map
+    image: map
+    container_name: map
+    ports:
+      - "8083:8083"
+    environment:
+      - YANDEX_MAPS_API_KEY=${YANDEX_MAPS_API_KEY}
+    command: "python -m uvicorn requests:app --host 0.0.0.0 --port 8083"
   
   frontend:
     build: ./Frontend
