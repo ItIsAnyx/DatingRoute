@@ -171,7 +171,7 @@ const logout = () => {
   justify-content: center;
   width: 36px;
   height: 36px;
-  background: #10b981;
+  background: #00ADB5;
   color: white;
   border-radius: 50%;
   font-weight: 600;
@@ -182,7 +182,7 @@ const logout = () => {
   padding: 0.5rem 1rem;
   border: 1px solid #e5e7eb;
   background: transparent;
-  color: #6b7280;
+  color: white;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s;

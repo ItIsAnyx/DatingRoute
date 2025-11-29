@@ -4,15 +4,23 @@
       v-for="msg in messages"
       :key="msg.id"
       class="message"
-      :class="msg.type"
+      :class="[msg.type, { 'error-message': msg.isError }]"
     >
-      <div class="message-avatar">
-        <span v-if="msg.type === 'ai'">AI</span>
-        <span v-else class="user-avatar-small">{{ userInitials }}</span>
-      </div>
       <div class="message-content">
         <div class="message-text">{{ msg.text }}</div>
-        <div class="message-time">{{ formatTime(msg.timestamp) }}</div>
+      </div>
+    </div>
+    
+    <div v-if="loading" class="message ai">
+      <div class="message-avatar">
+        <span>AI</span>
+      </div>
+      <div class="message-content loading-content">
+        <div class="typing-indicator">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
     </div>
   </div>
@@ -23,7 +31,8 @@ import { ref, nextTick, watch } from 'vue'
 
 const props = defineProps({
   messages: Array,
-  userInitials: String
+  userInitials: String,
+  loading: Boolean
 })
 
 const container = ref(null)
@@ -71,14 +80,19 @@ watch(
 }
 
 .message-content {
-  background: #f8fafc;
+  background: #808080;
   padding: 0.75rem 1rem;
   border-radius: 12px;
 }
 
 .message.user .message-content {
-  background: #667eea;
+  background: #00ADB5;
   color: white;
+}
+
+.message.error-message .message-content {
+  background: #252525;
+  color: rgb(255, 112, 112);
 }
 
 .message-time {
@@ -97,10 +111,46 @@ watch(
   justify-content: center;
   width: 32px;
   height: 32px;
-  background: #10b981;
-  color: white;
+  background: #252525;
+  color: rgb(145, 145, 145);
   border-radius: 6px;
   font-weight: 600;
   font-size: 0.7rem;
+}
+
+.loading-content {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+}
+
+.typing-indicator span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #00ADB5;
+  animation: typing 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-10px);
+  }
 }
 </style>

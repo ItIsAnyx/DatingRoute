@@ -1,9 +1,8 @@
 <template>
   <div class="no-chat-selected">
     <div class="welcome-message">
-      <div class="welcome-icon">💬</div>
       <h3>Добро пожаловать в чат-планировщик!</h3>
-      <p>Опишите ваши пожелания для идеального свидания, и ИИ создаст маршрут</p>
+      <p>Опишите ваши пожелания для идеального отдыха, и ИИ создаст маршрут</p>
 
       <div class="prompt-suggestions">
         <div
@@ -38,6 +37,10 @@ defineProps({
 .welcome-message {
   text-align: center;
   max-width: 500px;
+  color: white;
+}
+.welcome-message h3, .welcome-message p{
+  margin: 15px;
 }
 
 .welcome-icon {
@@ -53,18 +56,15 @@ defineProps({
 
 .prompt-suggestion {
   padding: 1rem;
-  background: #f8fafc;
-  border: 1px solid #e5e7eb;
+  background: #252525;
+  border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: 0.2s;
   text-align: left;
 }
 
 .prompt-suggestion:hover {
-  background: #667eea;
-  color: white;
-  border-color: #667eea;
-  transform: translateY(-2px);
+  background: #00ADB5;
 }
 </style>
