@@ -5,13 +5,13 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig({
   preview: {
     port: 8080
   }, 
   plugins: [
     vue(),
-    mode == 'development' ? vueDevTools() : null,
+    vueDevTools(),
   ],
   resolve: {
     alias: {
@@ -23,4 +23,4 @@ export default defineConfig(({ mode }) => ({
       '/api': process.env.BACKEND_API_URL || 'http://localhost:8081'
     }
   }
-}))
+})

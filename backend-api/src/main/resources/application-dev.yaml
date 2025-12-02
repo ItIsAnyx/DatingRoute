@@ -50,3 +50,7 @@ springdoc:
   swagger-ui:
     path: /docs
     operations-sorter: method
+
+logging:
+  level:
+    web: debug
