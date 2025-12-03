@@ -314,7 +314,7 @@ def summarize(payload: SummarizeRequest, api_key = Header(..., alias="AI_SECRET_
     {
         "role": "system",
         "content": (
-            "You extract the actual final list of route points from a dialogue.\n"
+        "You extract the actual final list of route points from a dialogue.\n"
             "Rules:\n"
             "1. Only include places the user still wants to visit in the end.\n"
             "2. If the user says they don't want a place, remove it completely.\n"
@@ -322,8 +322,7 @@ def summarize(payload: SummarizeRequest, api_key = Header(..., alias="AI_SECRET_
             "4. A route point is: place, address, street, building, park, cafe, museum.\n"
             "5. Ignore assistant suggestions unless the user confirmed them.\n"
             "6. Output only the final route as a semicolon-separated list."
-
-        )
+    )
     }] + payload.context +
     [
         {
