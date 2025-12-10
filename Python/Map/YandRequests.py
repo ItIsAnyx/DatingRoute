@@ -22,7 +22,6 @@ class PointItem(BaseModel):
     coords: List[float]  # [lat, lon]
 
 class RouteResponse(BaseModel):
-    type: str
     points: List[PointItem]
     params: dict
 
@@ -51,7 +50,6 @@ def save_route(payload: List[PointItem]):
 def get_route():
     points_to_use = latest_points or []
     return RouteResponse(
-        type="walking",
         points=points_to_use,
         params={"routingMode": "pedestrian"}
     )

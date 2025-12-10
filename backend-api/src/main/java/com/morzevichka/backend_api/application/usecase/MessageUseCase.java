@@ -82,7 +82,7 @@ public class MessageUseCase {
     }
 
     private MessageResponse sendExistingChat(SendMessageCommand cmd) {
-        Chat chat = chatApplicationService.getChat(cmd.chatId());
+        Chat chat = chatApplicationService.getChatForCurrentUser(cmd.chatId());
 
         chatService.isUserInChat(cmd.user().getId(), chat.getUser().getId());
 
@@ -103,7 +103,7 @@ public class MessageUseCase {
         CompletableFuture<Message> aiFuture =
                 messageApplicationService.createAiMessageAsync(chat, user, aiMessageContent);
 
-        Message userMsg = userFuture.join();
+        userFuture.join();
         Message aiMsg = aiFuture.join();
 
         contextApplicationService.saveContext(chat, context);

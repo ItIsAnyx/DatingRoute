@@ -1,6 +1,7 @@
 package com.morzevichka.backend_api.infrastructure.client;
 
 import com.morzevichka.backend_api.api.dto.ai.*;
+import com.morzevichka.backend_api.api.dto.route.RoutePlacesResponse;
 import com.morzevichka.backend_api.domain.model.Context;
 import com.morzevichka.backend_api.domain.value.InnerContext;
 import jakarta.annotation.PostConstruct;
@@ -8,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -61,7 +61,7 @@ public class AiClient {
                 .block();
     }
 
-    public AiSummarizeResponse summarizeRequest(List<InnerContext> context) {
+    public RoutePlacesResponse summarizeRequest(List<InnerContext> context) {
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder
                         .path("/api/response/summarize")
@@ -69,7 +69,7 @@ public class AiClient {
                 )
                 .bodyValue(Map.of("context", context))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<AiSummarizeResponse>() {})
+                .bodyToMono(new ParameterizedTypeReference<RoutePlacesResponse>() {})
                 .block();
     }
 }

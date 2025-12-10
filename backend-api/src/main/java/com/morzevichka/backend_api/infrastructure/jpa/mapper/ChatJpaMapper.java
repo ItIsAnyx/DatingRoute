@@ -22,7 +22,8 @@ public class ChatJpaMapper {
                 .title(chat.getTitle())
                 .user(UserEntity.builder()
                         .id(chat.getUser().getId())
-                        .build())
+                        .build()
+                )
                 .build();
     }
 

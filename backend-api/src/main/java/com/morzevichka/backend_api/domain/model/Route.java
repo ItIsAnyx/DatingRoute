@@ -1,0 +1,24 @@
+package com.morzevichka.backend_api.domain.model;
+
+import com.morzevichka.backend_api.domain.value.RouteType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class Route {
+    private Long id;
+    private Chat chat;
+    private List<String> places = new ArrayList<>();
+    private LocalDateTime updatedAt;
+    private RouteType type = RouteType.PEDESTRIAN;
+
+}

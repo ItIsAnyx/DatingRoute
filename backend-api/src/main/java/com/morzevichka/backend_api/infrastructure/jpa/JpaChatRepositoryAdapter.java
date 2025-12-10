@@ -45,6 +45,12 @@ public class JpaChatRepositoryAdapter implements ChatRepository {
     }
 
     @Override
+    public void delete(Chat chat) {
+        ChatEntity entity = mapper.toEntity(chat);
+        jpa.delete(entity);
+    }
+
+    @Override
     public Chat findById(Long chatId) {
         return mapper.toDomain(jpa.findById(chatId).orElseThrow(() -> new ChatNotFoundException(chatId)));
     }

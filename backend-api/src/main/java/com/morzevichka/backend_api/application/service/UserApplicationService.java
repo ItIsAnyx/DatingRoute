@@ -4,6 +4,8 @@ import com.morzevichka.backend_api.domain.model.User;
 import com.morzevichka.backend_api.domain.repository.UserRepository;
 import com.morzevichka.backend_api.domain.service.UserService;
 import com.morzevichka.backend_api.domain.value.Role;
+import com.morzevichka.backend_api.infrastructure.exception.user.UserNotFoundException;
+import com.morzevichka.backend_api.infrastructure.exception.user.UserNotFoundInContextException;
 import com.morzevichka.backend_api.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -21,7 +23,7 @@ public class UserApplicationService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null) {
-            return null;
+            throw new UserNotFoundInContextException();
         }
 
         Object principal = authentication.getPrincipal();
@@ -29,7 +31,7 @@ public class UserApplicationService {
         if (principal instanceof CustomUserDetails userDetails) {
             return userDetails.getUser();
         } else {
-            return null;
+            throw new UserNotFoundInContextException();
         }
     }
 

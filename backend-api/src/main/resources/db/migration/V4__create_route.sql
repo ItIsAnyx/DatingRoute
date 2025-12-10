@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS routes(
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    chat_id BIGINT NOT NULL UNIQUE,
+    places JSONB NOT NULL,
+    route_type VARCHAR(50) NOT NULL,
+    CONSTRAINT fk_routes__chat_id_chat FOREIGN KEY (chat_id) REFERENCES chats(id)
+);
