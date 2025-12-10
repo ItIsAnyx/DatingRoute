@@ -1,11 +1,9 @@
 package com.morzevichka.backend_api.application.service;
 
-import com.morzevichka.backend_api.api.dto.ai.AiSummarizeResponse;
 import com.morzevichka.backend_api.domain.model.Chat;
-import com.morzevichka.backend_api.domain.model.Context;
 import com.morzevichka.backend_api.domain.model.User;
 import com.morzevichka.backend_api.domain.repository.ChatRepository;
-import com.morzevichka.backend_api.infrastructure.client.AiClient;
+import com.morzevichka.backend_api.domain.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +15,7 @@ public class ChatApplicationService {
 
     private final UserApplicationService userApplicationService;
     private final ChatRepository chatRepository;
-    private final AiClient aiClient;
+    private final ChatService chatService;
 
     public List<Chat> getUserChats() {
         User user = userApplicationService.getCurrentUser();
@@ -25,8 +23,13 @@ public class ChatApplicationService {
         return chatRepository.findAllByUserId(user.getId());
     }
 
-    public Chat getChat(Long chatId) {
-        return chatRepository.findById(chatId);
+    public Chat getChatForCurrentUser(Long chatId) {
+        Chat chat = chatRepository.findById(chatId);
+        User user = userApplicationService.getCurrentUser();
+
+        chatService.isUserInChat(user.getId(), chat.getUser().getId());
+
+        return chat;
     }
 
     public Chat createChat(String title, User user) {
@@ -38,7 +41,11 @@ public class ChatApplicationService {
         return chatRepository.save(chat);
     }
 
-    public AiSummarizeResponse summarize(Context context) {
-        return aiClient.summarizeRequest(context.getInnerContexts());
+    public Chat updateChat(Chat chat) {
+        return chatRepository.save(chat);
+    }
+
+    public void deleteChat(Chat chat) {
+        chatRepository.delete(chat);
     }
 }

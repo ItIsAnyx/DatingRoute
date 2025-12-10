@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ChatJpaMapper {
+public class JpaChatMapper {
 
-    private final UserJpaMapper userJpaMapper;
+    private final JpaUserMapper jpaUserMapper;
 
     public ChatEntity toEntity(Chat chat) {
         if (chat == null) return null;
@@ -22,7 +22,8 @@ public class ChatJpaMapper {
                 .title(chat.getTitle())
                 .user(UserEntity.builder()
                         .id(chat.getUser().getId())
-                        .build())
+                        .build()
+                )
                 .build();
     }
 
@@ -35,7 +36,7 @@ public class ChatJpaMapper {
                 .build();
 
         if (Hibernate.isInitialized(entity.getUser()) && entity.getUser() != null) {
-            domain.setUser(userJpaMapper.toDomain(entity.getUser()));
+            domain.setUser(jpaUserMapper.toDomain(entity.getUser()));
         } else {
             domain.setUser(User.builder().id(entity.getUserId()).build());
         }

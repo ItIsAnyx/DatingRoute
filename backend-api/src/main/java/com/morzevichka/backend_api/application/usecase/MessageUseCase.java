@@ -1,7 +1,7 @@
 package com.morzevichka.backend_api.application.usecase;
 
-import com.morzevichka.backend_api.api.dto.ai.AiCreateResponse;
-import com.morzevichka.backend_api.api.dto.ai.AiResponse;
+import com.morzevichka.backend_api.application.dto.ai.AiCreateClientResponse;
+import com.morzevichka.backend_api.application.dto.ai.AiClientResponse;
 import com.morzevichka.backend_api.api.dto.commands.SendMessageCommand;
 import com.morzevichka.backend_api.api.dto.message.MessageRequest;
 import com.morzevichka.backend_api.api.dto.message.MessageResponse;
@@ -70,7 +70,7 @@ public class MessageUseCase {
     }
 
     private MessageResponse sendFirstMessage(SendMessageCommand cmd) {
-        AiCreateResponse ai = aiClient.createChatRequest(cmd.content());
+        AiCreateClientResponse ai = aiClient.createChatRequest(cmd.content());
         log.info("Response from AI, title: {}, text: {}, context: {}", ai.getTitle(), ai.getMessage(), ai.getContext());
 
         chatService.isTitleEmpty(ai.getTitle());
@@ -82,15 +82,13 @@ public class MessageUseCase {
     }
 
     private MessageResponse sendExistingChat(SendMessageCommand cmd) {
-        Chat chat = chatApplicationService.getChat(cmd.chatId());
-
-        chatService.isUserInChat(cmd.user().getId(), chat.getUser().getId());
+        Chat chat = chatApplicationService.getChatForCurrentUser(cmd.chatId());
 
         Context context = contextApplicationService.getContext(chat.getId());
 
         log.info("Context: {}", context.getInnerContexts());
 
-        AiResponse ai = aiClient.sendMessageRequest(cmd.content(), context);
+        AiClientResponse ai = aiClient.sendMessageRequest(cmd.content(), context);
         log.info("Response from AI, text: {}, context: {}", ai.getMessage(), ai.getContext());
 
         return saveMessagesAndContext(chat, cmd.user(), ai.getContext(), cmd.content(), ai.getMessage());
@@ -103,7 +101,7 @@ public class MessageUseCase {
         CompletableFuture<Message> aiFuture =
                 messageApplicationService.createAiMessageAsync(chat, user, aiMessageContent);
 
-        Message userMsg = userFuture.join();
+        userFuture.join();
         Message aiMsg = aiFuture.join();
 
         contextApplicationService.saveContext(chat, context);

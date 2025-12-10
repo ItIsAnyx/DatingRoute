@@ -16,6 +16,7 @@ services:
       - REDIS_HOST=cache
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - FRONTEND_SERVICE_URL=http://frontend:8080
       - AI_SERVICE_URL=http://ai:8082
       - MAP_SERVICE_URL=http://map:8083
     depends_on:
@@ -54,10 +55,11 @@ services:
     ports:
       - "8083:8083"
     environment:
-      - YANDEX_MAPS_API_KEY=${YANDEX_MAPS_API_KEY}
-    command: "python -m uvicorn requests:app --host 0.0.0.0 --port 8083"
+      - GEOCODER_KEY=${GEOCODER_KEY}
+      - GEOSUGGEST_KEY=${GEOSUGGEST_KEY}
+    command: "python -m uvicorn YandApi:app --host 0.0.0.0 --port 8083"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8083"]
+      test: ["CMD", "curl", "-f", "http://localhost:8083/api/health"]
       interval: 1m
       timeout: 30s
       retries: 3
@@ -69,7 +71,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - BACKEND_API_URL=http://backend-api:8081
+      - VITE_BACKEND_API_URL=http://backend-api:8081
     command: "npm run dev"
     depends_on:
       - backend-api

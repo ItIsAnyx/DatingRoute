@@ -14,5 +14,7 @@ public interface ChatRepository {
 
     Chat save(Chat chat);
 
+    void delete(Chat chat);
+
     Chat findById(Long chatId);
 }

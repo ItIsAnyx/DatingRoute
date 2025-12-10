@@ -4,7 +4,7 @@ import com.morzevichka.backend_api.domain.model.Context;
 import com.morzevichka.backend_api.domain.repository.ContextRepository;
 import com.morzevichka.backend_api.infrastructure.exception.context.ContextNotFoundException;
 import com.morzevichka.backend_api.infrastructure.jpa.entity.ContextEntity;
-import com.morzevichka.backend_api.infrastructure.jpa.mapper.ContextJpaMapper;
+import com.morzevichka.backend_api.infrastructure.jpa.mapper.JpaContextMapper;
 import com.morzevichka.backend_api.infrastructure.jpa.repository.JpaContextRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 public class JpaContextRepositoryAdapter implements ContextRepository {
 
     private final JpaContextRepository jpa;
-    private final ContextJpaMapper mapper;
+    private final JpaContextMapper mapper;
 
     @Override
     public Context findByChatId(Long chatId) {

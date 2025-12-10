@@ -1,6 +1,5 @@
 package com.morzevichka.backend_api.infrastructure.jpa.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.morzevichka.backend_api.domain.value.InnerContext;
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;

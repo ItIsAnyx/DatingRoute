@@ -1,6 +1,6 @@
 package com.morzevichka.backend_api.infrastructure.client;
 
-import com.morzevichka.backend_api.api.dto.ai.*;
+import com.morzevichka.backend_api.application.dto.ai.*;
 import com.morzevichka.backend_api.domain.model.Context;
 import com.morzevichka.backend_api.domain.value.InnerContext;
 import jakarta.annotation.PostConstruct;
@@ -8,16 +8,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 import java.util.Map;
 
-
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class AiClient {
 
     private final AiClientProperties properties;
@@ -33,8 +31,8 @@ public class AiClient {
                 .build();
     }
 
-    public AiCreateResponse createChatRequest(String prompt) {
-        AiCreateRequest request = new AiCreateRequest(prompt);
+    public AiCreateClientResponse createChatRequest(String prompt) {
+        AiCreateClientRequest request = new AiCreateClientRequest(prompt);
 
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder
@@ -43,12 +41,12 @@ public class AiClient {
                 )
                 .bodyValue(request)
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<AiCreateResponse>() {})
+                .bodyToMono(new ParameterizedTypeReference<AiCreateClientResponse>() {})
                 .block();
     }
 
-    public AiResponse sendMessageRequest(String prompt, Context context) {
-        AiRequest request = new AiRequest(prompt, context.getInnerContexts());
+    public AiClientResponse sendMessageRequest(String prompt, Context context) {
+        AiClientRequest request = new AiClientRequest(prompt, context.getInnerContexts());
 
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder
@@ -57,11 +55,11 @@ public class AiClient {
                 )
                 .bodyValue(request)
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<AiResponse>() {})
+                .bodyToMono(new ParameterizedTypeReference<AiClientResponse>() {})
                 .block();
     }
 
-    public AiSummarizeResponse summarizeRequest(List<InnerContext> context) {
+    public AiPointsSummaryResponse summarizeRequest(List<InnerContext> context) {
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder
                         .path("/api/response/summarize")
@@ -69,7 +67,7 @@ public class AiClient {
                 )
                 .bodyValue(Map.of("context", context))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<AiSummarizeResponse>() {})
+                .bodyToMono(new ParameterizedTypeReference<AiPointsSummaryResponse>() {})
                 .block();
     }
 }

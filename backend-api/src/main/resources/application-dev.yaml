@@ -31,6 +31,8 @@ server:
   port: 8081
 
 service:
+  frontend:
+    url: ${FRONTEND_SERVICE_URL:http://localhost:8080}
   ai:
     url: ${AI_SERVICE_URL:http://localhost:8082}
     secret-key: ${AI_SECRET_KEY}

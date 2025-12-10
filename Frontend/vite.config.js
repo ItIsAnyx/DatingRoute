@@ -20,7 +20,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': process.env.BACKEND_API_URL || 'http://localhost:8081'
+      '/api': {
+        target: process.env.VITE_BACKEND_API_URL || 'http://localhost:8081',
+        changeOrigin: true
+      }
     }
   }
 })
