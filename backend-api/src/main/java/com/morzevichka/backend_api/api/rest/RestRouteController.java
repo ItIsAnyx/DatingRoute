@@ -1,6 +1,7 @@
 package com.morzevichka.backend_api.api.rest;
 
 import com.morzevichka.backend_api.api.dto.error.DefaultErrorResponse;
+import com.morzevichka.backend_api.api.dto.route.RouteBuildResponse;
 import com.morzevichka.backend_api.api.dto.route.RoutePlacesRequest;
 import com.morzevichka.backend_api.api.dto.route.RoutePlacesResponse;
 import com.morzevichka.backend_api.application.usecase.RouteUseCase;
@@ -61,7 +62,7 @@ public class RestRouteController {
             @ApiResponse(responseCode = "404", description = "Chat was not found",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = DefaultErrorResponse.class))})
     })
-    public ResponseEntity<Void> buildRoute(@PathVariable Long chatId) {
+    public ResponseEntity<RouteBuildResponse> buildRoute(@PathVariable Long chatId) {
         return null;
     }
 }

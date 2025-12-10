@@ -1,6 +1,5 @@
 package com.morzevichka.backend_api.infrastructure.jpa.mapper;
 
-import com.morzevichka.backend_api.application.mapper.ChatMapper;
 import com.morzevichka.backend_api.domain.model.Chat;
 import com.morzevichka.backend_api.domain.model.Route;
 import com.morzevichka.backend_api.infrastructure.jpa.entity.ChatEntity;
@@ -11,8 +10,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class RouteJpaMapper {
-    private final ChatJpaMapper chatJpaMapper;
+public class JpaRouteMapper {
+    private final JpaChatMapper jpaChatMapper;
 
     public RouteEntity toEntity(Route route) {
         if (route == null) return null;
@@ -40,7 +39,7 @@ public class RouteJpaMapper {
                 .build();
 
         if (Hibernate.isInitialized(entity.getChat()) && entity.getChat() != null) {
-            domain.setChat(chatJpaMapper.toDomain(entity.getChat()));
+            domain.setChat(jpaChatMapper.toDomain(entity.getChat()));
         } else {
             domain.setChat(Chat.builder().id(entity.getChatId()).build());
         }

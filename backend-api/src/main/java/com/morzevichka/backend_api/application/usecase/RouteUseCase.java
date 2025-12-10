@@ -1,5 +1,6 @@
 package com.morzevichka.backend_api.application.usecase;
 
+import com.morzevichka.backend_api.api.dto.route.RouteBuildResponse;
 import com.morzevichka.backend_api.api.dto.route.RoutePlacesRequest;
 import com.morzevichka.backend_api.api.dto.route.RoutePlacesResponse;
 import com.morzevichka.backend_api.application.service.ChatApplicationService;
@@ -35,5 +36,7 @@ public class RouteUseCase {
         return null;
     }
 
-    public void buildRoute() {}
+    public RouteBuildResponse buildRoute() {
+        return null;
+    }
 }

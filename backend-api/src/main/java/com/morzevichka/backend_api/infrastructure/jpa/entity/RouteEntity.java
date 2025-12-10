@@ -25,7 +25,7 @@ public class RouteEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "chat_id", nullable = false, insertable = false, updatable = false, unique = true)
+    @Column(name = "chat_id", insertable = false, updatable = false)
     private Long chatId;
 
     @Type(JsonBinaryType.class)

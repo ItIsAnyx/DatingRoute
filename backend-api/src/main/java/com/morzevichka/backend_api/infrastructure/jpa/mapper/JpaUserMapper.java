@@ -5,7 +5,7 @@ import com.morzevichka.backend_api.infrastructure.jpa.entity.UserEntity;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UserJpaMapper {
+public class JpaUserMapper {
 
     public UserEntity toEntity(User user) {
         return UserEntity.builder()

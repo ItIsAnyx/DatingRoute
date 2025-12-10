@@ -8,12 +8,12 @@ import org.hibernate.Hibernate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ContextJpaMapper {
+public class JpaContextMapper {
 
-    private final ChatJpaMapper chatJpaMapper;
+    private final JpaChatMapper jpaChatMapper;
 
-    public ContextJpaMapper(ChatJpaMapper chatJpaMapper) {
-        this.chatJpaMapper = chatJpaMapper;
+    public JpaContextMapper(JpaChatMapper jpaChatMapper) {
+        this.jpaChatMapper = jpaChatMapper;
     }
 
     public ContextEntity toEntity(Context context) {
@@ -37,7 +37,7 @@ public class ContextJpaMapper {
                 .build();
 
         if (Hibernate.isInitialized(entity.getChat()) && entity.getChat() != null) {
-            domain.setChat(chatJpaMapper.toDomain(entity.getChat()));
+            domain.setChat(jpaChatMapper.toDomain(entity.getChat()));
         } else {
             domain.setChat(Chat.builder().id(entity.getChatId()).build());
         }

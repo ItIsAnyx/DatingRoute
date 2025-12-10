@@ -10,14 +10,14 @@ import org.hibernate.Hibernate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MessageJpaMapper {
+public class JpaMessageMapper {
 
-    private final UserJpaMapper userJpaMapper;
-    private final ChatJpaMapper chatJpaMapper;
+    private final JpaUserMapper jpaUserMapper;
+    private final JpaChatMapper jpaChatMapper;
 
-    public MessageJpaMapper(UserJpaMapper userJpaMapper, ChatJpaMapper chatJpaMapper) {
-        this.userJpaMapper = userJpaMapper;
-        this.chatJpaMapper = chatJpaMapper;
+    public JpaMessageMapper(JpaUserMapper jpaUserMapper, JpaChatMapper jpaChatMapper) {
+        this.jpaUserMapper = jpaUserMapper;
+        this.jpaChatMapper = jpaChatMapper;
     }
 
     public MessageEntity toEntity(Message message) {
@@ -49,13 +49,13 @@ public class MessageJpaMapper {
                 .build();
 
         if (Hibernate.isInitialized(entity.getChat()) && entity.getChat() != null) {
-            domain.setChat(chatJpaMapper.toDomain(entity.getChat()));
+            domain.setChat(jpaChatMapper.toDomain(entity.getChat()));
         } else {
             domain.setChat(Chat.builder().id(entity.getChatId()).build());
         }
 
         if (Hibernate.isInitialized(entity.getUser()) && entity.getUser() != null) {
-            domain.setUser(userJpaMapper.toDomain(entity.getUser()));
+            domain.setUser(jpaUserMapper.toDomain(entity.getUser()));
         } else {
             domain.setUser(User.builder().id(entity.getUserId()).build());
         }
