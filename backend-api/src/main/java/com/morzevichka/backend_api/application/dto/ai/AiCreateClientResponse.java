@@ -1,4 +1,4 @@
-package com.morzevichka.backend_api.api.dto.ai;
+package com.morzevichka.backend_api.application.dto.ai;
 
 import com.morzevichka.backend_api.domain.value.InnerContext;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @Getter
-public class AiCreateResponse {
+public class AiCreateClientResponse {
     private String title;
     private String message;
     private List<InnerContext> context;

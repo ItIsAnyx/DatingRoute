@@ -14,6 +14,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @RedisHash("routes")
 @Data
@@ -22,7 +23,7 @@ import java.util.List;
 @Builder
 public class RouteCache implements Serializable {
     @Id
-    private Long id;
+    private UUID id;
     @Indexed
     private Long chatId;
     private List<String> places = new ArrayList<>();

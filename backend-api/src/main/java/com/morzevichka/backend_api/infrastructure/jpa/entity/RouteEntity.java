@@ -13,6 +13,7 @@ import org.hibernate.annotations.Type;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -22,8 +23,8 @@ import java.util.List;
 @Table(name = "routes")
 public class RouteEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(name = "chat_id", insertable = false, updatable = false)
     private Long chatId;

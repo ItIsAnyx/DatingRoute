@@ -9,6 +9,8 @@ import com.morzevichka.backend_api.application.service.RouteApplicationService;
 import com.morzevichka.backend_api.application.service.UserApplicationService;
 import com.morzevichka.backend_api.domain.model.Chat;
 import com.morzevichka.backend_api.domain.model.Context;
+import com.morzevichka.backend_api.domain.model.Route;
+import com.morzevichka.backend_api.domain.repository.RouteRepository;
 import com.morzevichka.backend_api.domain.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,7 +35,10 @@ public class RouteUseCase {
     }
 
     public RoutePlacesResponse updatePlaces(Long chatId, RoutePlacesRequest placesToUpdate) {
-        return null;
+        Chat chat = chatApplicationService.getChatForCurrentUser(chatId);
+
+        Route route = routeApplicationService.updatePlaces(chat.getId(), placesToUpdate.places());
+        return new RoutePlacesResponse(route.getPlaces());
     }
 
     public RouteBuildResponse buildRoute() {

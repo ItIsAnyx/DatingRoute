@@ -9,13 +9,14 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class Route {
-    private Long id;
+    private UUID id;
     private Chat chat;
     private List<String> places = new ArrayList<>();
     private LocalDateTime updatedAt;
