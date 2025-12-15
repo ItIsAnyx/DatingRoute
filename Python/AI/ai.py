@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Query
 from typing import Optional
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -109,8 +109,16 @@ def health():
 Требует заголовок x-api-key для аутентификации.
 """
 @app.post("/api/response", response_model=MessageRequest)
-def get_answer(payload: MessageRequest, messages=None, api_key: str = Header(..., alias="AI_SECRET_KEY"), generation_kwargs=None):
+def get_answer(payload: MessageRequest, 
+               test: bool = Query(False),
+               messages=None, 
+               api_key: str = Header(..., alias="AI_SECRET_KEY"), 
+               generation_kwargs=None):
     verify_key(api_key)
+
+    if (test):
+        return MessageRequest(message="Вот созданный мною маршрут:", context=list())
+
     context = reload_context(payload.context)
     if pipe is None:
         raise HTTPException(status_code=503, detail="Model is not loaded. Check server logs or try GET /api/health")
@@ -201,8 +209,14 @@ def get_answer(payload: MessageRequest, messages=None, api_key: str = Header(...
 
 
 @app.post("/api/response/create", response_model=MessageTitleResponse)
-def get_chat_title(payload: MessageTitleRequest, api_key: str = Header(..., alias="AI_SECRET_KEY")):
+def get_chat_title(payload: MessageTitleRequest, 
+                   api_key: str = Header(..., alias="AI_SECRET_KEY"), 
+                   test: bool = Query(False)):
     verify_key(api_key)
+
+    if (test):
+        return MessageTitleResponse(title="Короткий маршрут по...", message="Вот построенный мною маршрут...", context=list())
+    
     messages = [
         {
             "role": "system",
@@ -251,7 +265,7 @@ def get_chat_title(payload: MessageTitleRequest, api_key: str = Header(..., alia
         "do_sample": True,
     }
     request = MessageRequest(message=payload.message, context=[])
-    result = get_answer(request, messages, api_key, generation_kwargs)
+    result = get_answer(request, test, messages, api_key, generation_kwargs)
     print(f"\nAnswer success: ", result)
 
     try:

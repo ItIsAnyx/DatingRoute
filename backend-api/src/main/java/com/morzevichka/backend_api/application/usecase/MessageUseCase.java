@@ -56,21 +56,21 @@ public class MessageUseCase {
                 .build();
     }
 
-    public MessageResponse send(MessageRequest request) {
+    public MessageResponse send(MessageRequest request, boolean test) {
         User user = userApplicationService.getCurrentUser();
-        return send(new SendMessageCommand(request.chatId(), user, request.message()));
+        return send(new SendMessageCommand(request.chatId(), user, request.message()), test);
     }
 
-    public MessageResponse send(SendMessageCommand cmd) {
+    public MessageResponse send(SendMessageCommand cmd, boolean test) {
         if (cmd.chatId() == null) {
-            return sendFirstMessage(cmd);
+            return sendFirstMessage(cmd, test);
         } else {
-            return sendExistingChat(cmd);
+            return sendExistingChat(cmd, test);
         }
     }
 
-    private MessageResponse sendFirstMessage(SendMessageCommand cmd) {
-        AiCreateResponse ai = aiClient.createChatRequest(cmd.content());
+    private MessageResponse sendFirstMessage(SendMessageCommand cmd, boolean test) {
+        AiCreateResponse ai = aiClient.createChatRequest(cmd.content(), test);
         log.info("Response from AI, title: {}, text: {}, context: {}", ai.getTitle(), ai.getMessage(), ai.getContext());
 
         chatService.isTitleEmpty(ai.getTitle());
@@ -81,7 +81,7 @@ public class MessageUseCase {
         return saveMessagesAndContext(chat, cmd.user(), ai.getContext(), cmd.content(), ai.getMessage());
     }
 
-    private MessageResponse sendExistingChat(SendMessageCommand cmd) {
+    private MessageResponse sendExistingChat(SendMessageCommand cmd, boolean test) {
         Chat chat = chatApplicationService.getChat(cmd.chatId());
 
         chatService.isUserInChat(cmd.user().getId(), chat.getUser().getId());
@@ -90,7 +90,7 @@ public class MessageUseCase {
 
         log.info("Context: {}", context.getInnerContexts());
 
-        AiResponse ai = aiClient.sendMessageRequest(cmd.content(), context);
+        AiResponse ai = aiClient.sendMessageRequest(cmd.content(), context, test);
         log.info("Response from AI, text: {}, context: {}", ai.getMessage(), ai.getContext());
 
         return saveMessagesAndContext(chat, cmd.user(), ai.getContext(), cmd.content(), ai.getMessage());

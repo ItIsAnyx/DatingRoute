@@ -33,12 +33,13 @@ public class AiClient {
                 .build();
     }
 
-    public AiCreateResponse createChatRequest(String prompt) {
+    public AiCreateResponse createChatRequest(String prompt, Boolean test) {
         AiCreateRequest request = new AiCreateRequest(prompt);
 
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder
                         .path("/api/response/create")
+                        .queryParam("test", test)
                         .build()
                 )
                 .bodyValue(request)
@@ -47,12 +48,13 @@ public class AiClient {
                 .block();
     }
 
-    public AiResponse sendMessageRequest(String prompt, Context context) {
+    public AiResponse sendMessageRequest(String prompt, Context context, Boolean test) {
         AiRequest request = new AiRequest(prompt, context.getInnerContexts());
 
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder
                         .path("/api/response")
+                        .queryParam("test", test)
                         .build()
                 )
                 .bodyValue(request)

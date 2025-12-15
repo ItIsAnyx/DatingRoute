@@ -39,10 +39,10 @@ public class ChatUseCase {
                 .toList();
     }
 
-    public ChatCreateResponse createChat(ChatCreateRequest request) {
+    public ChatCreateResponse createChat(ChatCreateRequest request, boolean test) {
         User user = userApplicationService.getCurrentUser();
 
-        MessageResponse messageResponse = messageUseCase.send(new SendMessageCommand(null, user, request.message()));
+        MessageResponse messageResponse = messageUseCase.send(new SendMessageCommand(null, user, request.message()), test);
 
         Chat chat = chatApplicationService.getChat(messageResponse.getChatId());
 
