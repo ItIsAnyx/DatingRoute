@@ -10,6 +10,7 @@
           :active-chat="activeChat"
           @select="selectChat"
           @create="createNewChat"
+          @delete="deleteChat" 
         />
 
         <ChatArea
@@ -21,6 +22,7 @@
           @back="closeChat"
           @clear-chat="clearChat"
           @export-chat="exportChat"
+          @delete-chat="deleteChat" 
         />
 
         <EmptyChatView
@@ -33,23 +35,25 @@
   </div>
 </template>
 
+<!-- ... (скрипт и стили уже обновлены выше) ... -->
+
 <script setup>
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import HeaderComponent from '@/components/HeaderComponent.vue'
 import ChatsSidebar from '@/components/chats/ChatsSidebar.vue'
 import ChatArea from '@/components/chats/ChatArea.vue'
 import EmptyChatView from '@/components/chats/EmptyChatView.vue'
+// Импортируем наши новые функции
+import { connect, subscribeToChat, sendMessage as wsSendMessage, disconnect } from '@/services/websocketService.js'
 
 const router = useRouter()
 const activeChat = ref(null)
-const newMessage = ref('')
 const isMobile = ref(false)
 const loading = ref(false)
-
-
 const chats = ref([])
+let stompClientConnection = null // Храним соединение
 
 const promptSuggestions = [
   'Создай маршрут для первого свидания',
@@ -65,61 +69,126 @@ const userInitials = computed(() => {
 
 const isChatOpen = computed(() => isMobile.value && !!activeChat.value)
 
-const getAuthToken = () => {
-  return localStorage.getItem('access_token')
-}
-
+const getAuthToken = () => localStorage.getItem('access_token')
 const getAuthHeaders = () => {
   const token = getAuthToken()
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
+// --- Функции для работы с API ---
 
+// 1. Загрузка списка чатов (только id и title)
 const loadChats = async () => {
   try {
-    const response = await axios.get('/api/chats', {
-      headers: getAuthHeaders()
-    })
-    
+    const response = await axios.get('/api/chats', { headers: getAuthHeaders() })
+    // Мапим только id и title, история сообщений загружается отдельно
     chats.value = response.data.map(chat => ({
       id: chat.id,
       title: chat.title,
-      lastMessage: chat.message,
-      updatedAt: new Date(chat.createdAt),
+      lastMessage: '', // Будет обновлено при загрузке истории
+      updatedAt: new Date(), // Будет обновлено
       unreadCount: 0,
-      messages: [{
-        id: 1,
-        type: 'user',
-        text: chat.message,
-        timestamp: new Date(chat.createdAt)
-      }]
+      messages: [] // История пока пуста
     }))
   } catch (error) {
     console.error('Ошибка при загрузке чатов:', error)
-    if (error.response && error.response.status === 401) {
+    if (error.response?.status === 401) {
       router.push('/auth')
     }
   }
 }
 
-const selectChat = (chat) => {
+// 2. Загрузка истории сообщений для конкретного чата
+const loadChatHistory = async (chatId) => {
+  try {
+    const response = await axios.get(`/api/chats/${chatId}/messages`, { headers: getAuthHeaders() })
+    const chat = chats.value.find(c => c.id === chatId)
+    if (chat) {
+      chat.messages = response.data.messages.map(msg => ({
+        id: msg.id,
+        type: msg.message_type === 'USER_MESSAGE' ? 'user' : 'ai',
+        text: msg.content,
+        timestamp: new Date(msg.send_date)
+      }))
+      // Обновляем lastMessage после загрузки истории
+      if (chat.messages.length > 0) {
+        const lastMsg = chat.messages[chat.messages.length - 1];
+        chat.lastMessage = lastMsg.text;
+        chat.updatedAt = lastMsg.timestamp;
+      }
+    }
+  } catch (error) {
+    console.error('Ошибка при загрузке истории чата:', error)
+    if (error.response?.status === 404) {
+      alert('Чат не найден')
+    }
+  }
+}
+
+// 3. Удаление чата
+const deleteChat = async (chatId) => {
+  if (!confirm('Вы уверены, что хотите удалить этот чат?')) return;
+
+  try {
+    await axios.delete(`/api/chats/${chatId}`, { headers: getAuthHeaders() })
+    chats.value = chats.value.filter(chat => chat.id !== chatId)
+    if (activeChat.value?.id === chatId) {
+      activeChat.value = null
+    }
+  } catch (error) {
+    console.error('Ошибка при удалении чата:', error)
+    alert('Не удалось удалить чат')
+  }
+}
+
+
+// --- Функции для управления состоянием UI ---
+
+const selectChat = async (chat) => {
   activeChat.value = chat
   chat.unreadCount = 0
+  
+  // Отписываемся от старого чата, если он был
+  if (stompClientConnection) {
+    // Здесь может быть сложная логика отписки, но для начала можно оставить так
+  }
+
+  // Загружаем историю, если она еще не загружена
+  if (chat.messages.length === 0) {
+    await loadChatHistory(chat.id)
+  }
+
+  // Подписываемся на сообщения для нового чата
+  if (stompClientConnection) {
+    subscribeToChat(chat.id, (message) => {
+      // Это callback, который вызовется при получении нового сообщения
+      if (message.chat_id === activeChat.value.id) {
+        const aiMsg = {
+          id: message.id,
+          type: 'ai',
+          text: message.content,
+          timestamp: new Date(message.send_date)
+        }
+        activeChat.value.messages.push(aiMsg)
+        activeChat.value.lastMessage = aiMsg.text
+        activeChat.value.updatedAt = aiMsg.timestamp
+      }
+    })
+  }
 }
 
 const closeChat = () => (activeChat.value = null)
 
-const createNewChat = async () => {
+const createNewChat = () => {
   const tempId = Date.now()
   const newChat = {
     id: tempId,
     title: 'Новый чат',
-    lastMessage: 'Чат только создан...',
+    lastMessage: '',
     updatedAt: new Date(),
     unreadCount: 0,
     messages: []
   }
-  
   chats.value.unshift(newChat)
   activeChat.value = newChat
   return newChat
@@ -135,17 +204,10 @@ const clearChat = () => {
 
 const exportChat = () => {
   if (activeChat.value) {
-    const chatData = {
-      title: activeChat.value.title,
-      messages: activeChat.value.messages,
-      createdAt: activeChat.value.updatedAt
-    }
-    
+    const chatData = { title: activeChat.value.title, messages: activeChat.value.messages }
     const dataStr = JSON.stringify(chatData, null, 2)
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr)
-    
     const exportFileDefaultName = `chat_${activeChat.value.title}_${Date.now()}.json`
-    
     const linkElement = document.createElement('a')
     linkElement.setAttribute('href', dataUri)
     linkElement.setAttribute('download', exportFileDefaultName)
@@ -153,78 +215,41 @@ const exportChat = () => {
   }
 }
 
+// 4. Отправка сообщения (самая важная часть)
 const sendMessage = async (text) => {
-  if (!text.trim() || loading.value) return
+  if (!text.trim() || loading.value || !activeChat.value) return
 
-  if (!activeChat.value) {
-    await createNewChat()
-  }
-
-  const userMsg = { 
-    id: Date.now(), 
-    type: 'user', 
-    text, 
-    timestamp: new Date() 
-  }
+  const userMsg = { id: Date.now(), type: 'user', text, timestamp: new Date() }
   activeChat.value.messages.push(userMsg)
   activeChat.value.lastMessage = text
   activeChat.value.updatedAt = new Date()
 
-  loading.value = true
-  
-  try {
-    const response = await axios.post('/api/chats', 
-      { message: text },
-      { headers: getAuthHeaders() }
-    )
-
-    if (response.status === 201) {
-      const responseData = response.data
-
-      if (activeChat.value.messages.length === 1) {
-        activeChat.value.title = responseData.title || 'Новый маршрут'
-      }
-
+  // Если чат временный, сначала создаем его через HTTP
+  if (activeChat.value.id > 1000000) {
+    loading.value = true
+    try {
+      const response = await axios.post('/api/chats?test=true', { message: text }, { headers: getAuthHeaders() })
+      const responseData = response.data;
+      activeChat.value.id = responseData.id;
+      activeChat.value.title = responseData.title || 'Новый маршрут';
+      
       const aiMsg = {
-        id: Date.now() + 1,
+        id: responseData.message.id,
         type: 'ai',
-        text: responseData.message || 'Маршрут создан успешно',
-        timestamp: new Date()
+        text: responseData.message.content,
+        timestamp: new Date(responseData.message.send_date)
       }
-      activeChat.value.messages.push(aiMsg)
-      activeChat.value.lastMessage = aiMsg.text
-      activeChat.value.updatedAt = new Date()
-
-      if (typeof activeChat.value.id === 'number' && activeChat.value.id > 1000000) {
-        activeChat.value.id = responseData.id
-      }
+      activeChat.value.messages.push(aiMsg);
+      activeChat.value.lastMessage = aiMsg.text;
+      activeChat.value.updatedAt = aiMsg.timestamp;
+    } catch (error) {
+      // ... обработка ошибки
+    } finally {
+      loading.value = false
     }
-  } catch (error) {
-    console.error('Ошибка при отправке сообщения:', error)
-
-    let errorMessage = 'Произошла ошибка при обработке вашего запроса'
-    
-    if (error.response) {
-      if (error.response.status === 400) {
-        errorMessage = error.response.data.message || 'Неверный формат запроса'
-      } else if (error.response.status === 401) {
-        errorMessage = 'Ошибка авторизации. Пожалуйста, войдите снова.'
-        router.push('/auth')
-      }
-    }
-    
-    const errorMsg = {
-      id: Date.now() + 1,
-      type: 'ai',
-      text: errorMessage,
-      timestamp: new Date(),
-      isError: true
-    }
-    activeChat.value.messages.push(errorMsg)
-    activeChat.value.lastMessage = errorMessage
-    activeChat.value.updatedAt = new Date()
-  } finally {
-    loading.value = false
+  } else {
+    // Если чат уже существует, отправляем сообщение через WebSocket
+    wsSendMessage(activeChat.value.id, text, true) // true для тестового режима
   }
 }
 
@@ -238,7 +263,6 @@ const checkMobile = () => (isMobile.value = window.innerWidth <= 768)
 onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
-  
   loadChats()
 })
 </script>

@@ -11,6 +11,7 @@
         <div class="chat-actions">
           <button class="action-btn" @click="clearChat">Очистить чат</button>
           <button class="action-btn" @click="exportChat">Экспорт чата</button>
+          <button class="action-btn" @click="handleDeleteChat">Удалить чат</button>
         </div>
       </div>
 
@@ -25,13 +26,13 @@
 import MessageList from './MessageList.vue'
 import MessageInput from './MessageInput.vue'
 
-defineProps({
+const props = defineProps({
   chat: Object,
   userInitials: String,
   loading: Boolean
 })
 
-const emit = defineEmits(['clear-chat', 'export-chat'])
+const emit = defineEmits(['clear-chat', 'export-chat', 'delete-chat', 'send'])
 
 const clearChat = () => {
   emit('clear-chat')
@@ -39,6 +40,12 @@ const clearChat = () => {
 
 const exportChat = () => {
   emit('export-chat')
+}
+
+const handleDeleteChat = () => {
+  if (props.chat) {
+    emit('delete-chat', props.chat.id)
+  }
 }
 </script>
 

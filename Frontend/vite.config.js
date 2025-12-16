@@ -6,6 +6,10 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    // Определяем `global` для браузера, чтобы библиотеки не ломались
+    global: 'globalThis',
+  },
   preview: {
     port: 8080
   }, 

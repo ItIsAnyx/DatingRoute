@@ -15,36 +15,80 @@
         class="chat-item"
         :class="{ active: activeChat?.id === chat.id }"
         @click="$emit('select', chat)"
+        @contextmenu.prevent="showContextMenu($event, chat)"
       >
-
         <div class="chat-info">
           <div class="chat-title">{{ chat.title }}</div>
-          <div class="chat-preview">{{ chat.lastMessage }}</div>
-        </div>
-
-        <div class="chat-status" v-if="chat.unreadCount > 0">
-          <span class="unread-badge">{{ chat.unreadCount }}</span>
+          <div class="chat-preview">{{ chat.lastMessage || 'Пустой чат' }}</div>
         </div>
       </div>
+    </div>
+
+    <!-- Контекстное меню для удаления -->
+    <div v-if="contextMenuVisible" class="context-menu" :style="{ top: contextMenuY + 'px', left: contextMenuX + 'px' }" @click="hideContextMenu">
+      <button @click.stop="handleDeleteChat">Удалить чат</button>
     </div>
   </aside>
 </template>
 
 <script setup>
-defineProps({
+import { ref, onMounted, onUnmounted } from 'vue'
+
+const props = defineProps({
   chats: Array,
   activeChat: Object
 })
 
+const emit = defineEmits(['select', 'create', 'delete'])
+
+const contextMenuVisible = ref(false)
+const contextMenuX = ref(0)
+const contextMenuY = ref(0)
+const selectedChatForDelete = ref(null)
+
+const showContextMenu = (event, chat) => {
+  contextMenuVisible.value = true
+  contextMenuX.value = event.clientX
+  contextMenuY.value = event.clientY
+  selectedChatForDelete.value = chat
+}
+
+const hideContextMenu = () => {
+  contextMenuVisible.value = false
+  selectedChatForDelete.value = null
+}
+
+const handleDeleteChat = () => {
+  if (selectedChatForDelete.value) {
+    emit('delete', selectedChatForDelete.value.id)
+  }
+  hideContextMenu()
+}
+
+const handleClickOutside = (event) => {
+  if (!event.target.closest('.context-menu')) {
+    hideContextMenu()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <style scoped>
+/* ... (ваши существующие стили) ... */
 .chats-sidebar {
   width: 400px;
   border-right: 1px solid #404040;
   display: flex;
   flex-direction: column;
   background: #191919;
+  position: relative; /* Для позиционирования контекстного меню */
 }
 
 .sidebar-header {
@@ -99,6 +143,9 @@ defineProps({
   border-right: 5px solid #00ADB5;
 }
 
+.chat-info {
+  flex: 1;
+}
 
 .chat-title {
   font-weight: 600;
@@ -108,23 +155,31 @@ defineProps({
 .chat-preview {
   color: #6b7280;
   font-size: 0.875rem;
+  margin-top: 4px;
 }
 
-.chat-time {
-  color: #9ca3af;
-  font-size: 0.75rem;
+/* Стили для контекстного меню */
+.context-menu {
+  position: fixed;
+  background: #252525;
+  border: 1px solid #404040;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
 }
 
-.unread-badge {
-  background: #ef4444;
+.context-menu button {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
   color: white;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.context-menu button:hover {
+  background: #00ADB5;
 }
 </style>
