@@ -1,9 +1,9 @@
 package com.morzevichka.backend_api.api.rest;
 
-import com.morzevichka.backend_api.api.dto.ai.AiSummarizeResponse;
 import com.morzevichka.backend_api.api.dto.chat.ChatCreateRequest;
 import com.morzevichka.backend_api.api.dto.chat.ChatCreateResponse;
 import com.morzevichka.backend_api.api.dto.chat.ChatResponse;
+import com.morzevichka.backend_api.api.dto.chat.ChatUpdateRequest;
 import com.morzevichka.backend_api.api.dto.error.DefaultErrorResponse;
 import com.morzevichka.backend_api.api.dto.error.ValidationErrorResponse;
 import com.morzevichka.backend_api.api.dto.message.MessageRequest;
@@ -68,11 +68,10 @@ public class RestChatController {
         return ResponseEntity.created(location).body(response);
     }
 
-    @PutMapping(value = "/{id}", headers = "Authorization", consumes = "application/json")
-    @Operation(summary = "Updates an existing chat")
+    @PutMapping(value = "/{chatId}", headers = "Authorization", consumes = "application/json")
+    @Operation(summary = "Updates an existing chat (can't create new chat)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Chat was updated"),
-            @ApiResponse(responseCode = "201", description = "Chat was created"),
             @ApiResponse(responseCode = "400", description = "Invalid body request",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ValidationErrorResponse.class))}),
             @ApiResponse(responseCode = "401", description = "Unauthorized",
@@ -80,15 +79,10 @@ public class RestChatController {
             @ApiResponse(responseCode = "404", description = "Chat was not found",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = DefaultErrorResponse.class))})
     })
-    public ResponseEntity<ChatResponse> updateChat(@RequestBody @Valid ChatResponse request) {
-        boolean updated = chatUseCase.updateChat(request);
+    public ResponseEntity<ChatResponse> updateChat(@PathVariable Long chatId, @RequestBody @Valid ChatUpdateRequest request) {
+        ChatResponse updated = chatUseCase.updateChat(chatId, request);
 
-        if (updated) {
-            URI location = URI.create("/chats/" + request.getId());
-            return ResponseEntity.created(location).body(request);
-        } else {
-            return ResponseEntity.ok(request);
-        }
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping(value = "/{id}", headers = "Authorization")
@@ -120,20 +114,6 @@ public class RestChatController {
             @ParameterObject Pageable pageable
     ) {
         PageableMessageResponse response = messageUseCase.getPageableMessages(chatId, pageable);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping(value = "/{chatId}/summary", headers = "Authorization")
-    @Operation(summary = "Get points from chat history")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Found messages"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = DefaultErrorResponse.class))}),
-            @ApiResponse(responseCode = "404", description = "Chat was not found",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = DefaultErrorResponse.class))})
-    })
-    public ResponseEntity<AiSummarizeResponse> summarize(@PathVariable Long chatId) {
-        AiSummarizeResponse response = chatUseCase.summarize(chatId);
         return ResponseEntity.ok(response);
     }
 

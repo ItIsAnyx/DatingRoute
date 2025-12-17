@@ -7,6 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.annotations.Type;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 
 import java.util.List;
 
@@ -32,6 +35,7 @@ public class UserEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
+    @JdbcType(value= PostgreSQLEnumJdbcType.class)
     private Role role = Role.USER;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)

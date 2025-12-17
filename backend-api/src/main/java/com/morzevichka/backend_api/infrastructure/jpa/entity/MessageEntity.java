@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 
 import java.time.LocalDateTime;
 
@@ -26,6 +28,8 @@ public class MessageEntity {
     private String content;
 
     @Enumerated(EnumType.STRING)
+    @JdbcType(value= PostgreSQLEnumJdbcType.class)
+    @Column(name = "message_type")
     private MessageType messageType;
 
     @CreationTimestamp

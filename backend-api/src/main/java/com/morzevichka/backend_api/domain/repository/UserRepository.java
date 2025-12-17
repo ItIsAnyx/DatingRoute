@@ -4,7 +4,7 @@ import com.morzevichka.backend_api.domain.model.User;
 
 public interface UserRepository {
 
-    User getByEmail(String email);
+    User findByEmail(String email);
 
     User save(User user);
 

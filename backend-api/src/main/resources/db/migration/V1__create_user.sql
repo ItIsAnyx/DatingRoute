@@ -1,7 +1,9 @@
+CREATE TYPE user_role AS ENUM('USER', 'ADMIN');
+
 CREATE TABLE users (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     login VARCHAR(30) NOT NULL,
     email VARCHAR(254) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(255) CHECK (ROLE IN ('USER', 'ADMIN'))
+    role user_role NOT NULL
 );
