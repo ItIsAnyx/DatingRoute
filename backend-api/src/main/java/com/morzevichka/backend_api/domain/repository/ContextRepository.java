@@ -7,4 +7,6 @@ public interface ContextRepository {
     Context findByChatId(Long chatId);
 
     Context save(Context context);
+
+    void deleteByChatId(Long chatId);
 }

@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface JpaContextRepository extends JpaRepository<ContextEntity, Long> {
 
     Optional<ContextEntity> findByChatId(Long chatId);
+
+    void deleteByChatId(Long chatId);
 }

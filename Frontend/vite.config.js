@@ -9,9 +9,6 @@ export default defineConfig({
   define: {
     // Определяем `global` для браузера, чтобы библиотеки не ломались
     global: 'globalThis',
-  },
-  preview: {
-    port: 8080
   }, 
   plugins: [
     vue(),
@@ -24,7 +21,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': process.env.BACKEND_API_URL || 'http://localhost:8081'
+      '/api': 'http://localhost:8081'
     }
   }
 })

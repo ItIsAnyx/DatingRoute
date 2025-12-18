@@ -2,6 +2,7 @@ package com.morzevichka.backend_api.infrastructure.jpa;
 
 import com.morzevichka.backend_api.domain.model.Chat;
 import com.morzevichka.backend_api.domain.repository.ChatRepository;
+import com.morzevichka.backend_api.domain.repository.ContextRepository;
 import com.morzevichka.backend_api.domain.repository.RouteRepository;
 import com.morzevichka.backend_api.infrastructure.exception.chat.ChatNotFoundException;
 import com.morzevichka.backend_api.infrastructure.jpa.entity.ChatEntity;
@@ -9,6 +10,7 @@ import com.morzevichka.backend_api.infrastructure.jpa.mapper.JpaChatMapper;
 import com.morzevichka.backend_api.infrastructure.jpa.repository.JpaChatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,6 +20,7 @@ public class JpaChatRepositoryAdapter implements ChatRepository {
 
     private final JpaChatRepository jpa;
     private final RouteRepository routeRepository;
+    private final ContextRepository contextRepository;
     private final JpaChatMapper mapper;
 
     @Override
@@ -48,8 +51,9 @@ public class JpaChatRepositoryAdapter implements ChatRepository {
 
     @Override
     public void delete(Chat chat) {
-        jpa.delete(mapper.toEntity(chat));
+        contextRepository.deleteByChatId(chat.getId());
         routeRepository.deleteByChatId(chat.getId());
+        jpa.deleteById(chat.getId());
     }
 
     @Override

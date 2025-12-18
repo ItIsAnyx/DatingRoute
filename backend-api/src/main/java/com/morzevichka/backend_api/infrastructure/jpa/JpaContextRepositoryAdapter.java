@@ -28,4 +28,9 @@ public class JpaContextRepositoryAdapter implements ContextRepository {
         ContextEntity entity = mapper.toEntity(context);
         return mapper.toDomain(jpa.save(entity));
     }
+
+    @Override
+    public void deleteByChatId(Long chatId) {
+        jpa.deleteByChatId(chatId);
+    }
 }

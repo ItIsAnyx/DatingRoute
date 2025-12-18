@@ -26,7 +26,7 @@ public class ContextEntity {
     @Column(name = "chat_id", insertable = false, updatable = false)
     private Long chatId;
 
-    @ManyToOne(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_id", nullable = false)
     private ChatEntity chat;
 
