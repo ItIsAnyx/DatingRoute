@@ -2,7 +2,7 @@ FROM maven:3.9.11-amazoncorretto-21-alpine AS builder
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN mvn clean package -Pprod -DskipTests
 
 FROM amazoncorretto:21-alpine AS corretto-jdk
 RUN apk add --no-cache binutils
@@ -15,7 +15,7 @@ RUN $JAVA_HOME/bin/jlink \
 	--compress=2 \
 	--output /customjre
 
-FROM alpine:latest
+FROM alpine:3.23
 ENV JAVA_HOME=/jre
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 

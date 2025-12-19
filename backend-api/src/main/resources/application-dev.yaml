@@ -35,7 +35,7 @@ service:
     url: ${FRONTEND_SERVICE_URL:http://localhost:8080}
   ai:
     url: ${AI_SERVICE_URL:http://localhost:8082}
-    secret-key: ${AI_SECRET_KEY}
+    secret-key: ${AI_BACKEND_KEY}
   map:
     url: ${MAP_SERVICE_URL:http://localhost:8083}
 
