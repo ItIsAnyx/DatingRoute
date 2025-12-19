@@ -35,7 +35,7 @@ export function subscribeToChat(chatId, callback) {
   });
 }
 
-export function sendMessage(chatId, text, isTest = false) {
+export function sendMessage(chatId, text) {
   if (!stompClient || !stompClient.connected) {
     console.error('WebSocket is not connected');
     return;
@@ -44,8 +44,7 @@ export function sendMessage(chatId, text, isTest = false) {
   const destination = '/app/sendMessage'; // /app - префикс по умолчанию
   const body = JSON.stringify({
     chat_id: chatId,
-    message: text,
-    test: isTest
+    message: text
   });
 
   stompClient.send(destination, {}, body);

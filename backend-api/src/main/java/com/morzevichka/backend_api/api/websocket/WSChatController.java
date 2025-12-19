@@ -20,6 +20,6 @@ public class WSChatController {
     @MessageMapping("/sendMessage")
     @SendTo("/topic/public")
     public MessageResponse sendMessage(@Payload @Valid MessageRequest request) {
-        return messageUseCase.send(request, request.test());
+        return messageUseCase.send(request);
     }
 }

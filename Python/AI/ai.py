@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Header, HTTPException, Query
+from fastapi import FastAPI, Header, HTTPException
 from typing import Optional
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -6,7 +6,6 @@ import os
 from openai import OpenAI
 from json_converter import JSONConverter
 
-# Загрузка переменных из .env
 load_dotenv()
 AI_SECRET_KEY = os.getenv("AI_SECRET_KEY")
 AI_BACKEND_KEY = os.getenv("AI_BACKEND_KEY")
@@ -14,7 +13,6 @@ AI_BACKEND_KEY = os.getenv("AI_BACKEND_KEY")
 app = FastAPI(title="Простые запрос-ответы к нейросети")
 client = OpenAI(api_key=AI_SECRET_KEY, base_url="https://api.deepseek.com")
 
-# Опциональные Pydantic-модели для POST-запросов
 class MessageRequest(BaseModel):
     message: str
     context: list
@@ -77,12 +75,8 @@ def health():
 """
 @app.post("/api/response", response_model=MessageRequest)
 def get_answer(payload: MessageRequest, 
-               test: bool = Query(False),
                api_key: str = Header(..., alias="AI_BACKEND_KEY")):
     verify_key(api_key)
-
-    if (test):
-        return MessageRequest(message="Вот созданный мною маршрут:", context=list())
 
     context = payload.context
 
@@ -122,12 +116,8 @@ def get_answer(payload: MessageRequest,
 
 @app.post("/api/response/create", response_model=MessageTitleResponse)
 def get_chat_title(payload: MessageTitleRequest, 
-                   api_key: str = Header(..., alias="AI_BACKEND_KEY"),
-                   test: bool = Query(False)):
+                   api_key: str = Header(..., alias="AI_BACKEND_KEY")):
     verify_key(api_key)
-
-    if (test):
-        return MessageTitleResponse(title="Короткий маршрут по...", message="Вот построенный мною маршрут...", context=list())
     
     messages = [
         {

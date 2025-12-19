@@ -5,6 +5,7 @@ import com.morzevichka.backend_api.api.dto.chat.ChatCreateResponse;
 import com.morzevichka.backend_api.api.dto.chat.ChatResponse;
 import com.morzevichka.backend_api.api.dto.chat.ChatUpdateRequest;
 import com.morzevichka.backend_api.api.dto.commands.SendMessageCommand;
+import com.morzevichka.backend_api.api.dto.message.MessageRequest;
 import com.morzevichka.backend_api.api.dto.message.MessageResponse;
 import com.morzevichka.backend_api.application.mapper.ChatMapper;
 import com.morzevichka.backend_api.application.service.ChatApplicationService;
@@ -36,10 +37,8 @@ public class ChatUseCase {
                 .toList();
     }
 
-    public ChatCreateResponse createChat(ChatCreateRequest request, boolean test) {
-        User user = userApplicationService.getCurrentUser();
-
-        MessageResponse messageResponse = messageUseCase.send(new SendMessageCommand(null, user, request.message()), test);
+    public ChatCreateResponse createChat(ChatCreateRequest request) {
+        MessageResponse messageResponse = messageUseCase.send(new MessageRequest(null, request.message()));
 
         Chat chat = chatApplicationService.getChatForCurrentUser(messageResponse.getChatId());
 

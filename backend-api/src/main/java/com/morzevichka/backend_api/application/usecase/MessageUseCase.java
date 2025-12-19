@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -56,21 +57,20 @@ public class MessageUseCase {
                 .build();
     }
 
-    public MessageResponse send(MessageRequest request, boolean test) {
+    @Transactional
+    public MessageResponse send(MessageRequest request) {
         User user = userApplicationService.getCurrentUser();
-        return send(new SendMessageCommand(request.chatId(), user, request.message()), test);
-    }
+        SendMessageCommand cmd = new SendMessageCommand(request.chatId(), user, request.message());
 
-    public MessageResponse send(SendMessageCommand cmd, boolean test) {
         if (cmd.chatId() == null) {
-            return sendFirstMessage(cmd, test);
+            return sendFirstMessage(cmd);
         } else {
-            return sendExistingChat(cmd, test);
+            return sendExistingChat(cmd);
         }
     }
 
-    private MessageResponse sendFirstMessage(SendMessageCommand cmd, boolean test) {
-        AiCreateClientResponse ai = aiClient.createChatRequest(cmd.content(), test);
+    private MessageResponse sendFirstMessage(SendMessageCommand cmd) {
+        AiCreateClientResponse ai = aiClient.createChatRequest(cmd.content());
         log.info("Response from AI, title: {}, text: {}, context: {}", ai.getTitle(), ai.getMessage(), ai.getContext());
 
         chatService.isTitleEmpty(ai.getTitle());
@@ -81,14 +81,14 @@ public class MessageUseCase {
         return saveMessagesAndContext(chat, cmd.user(), ai.getContext(), cmd.content(), ai.getMessage());
     }
 
-    private MessageResponse sendExistingChat(SendMessageCommand cmd, boolean test) {
+    private MessageResponse sendExistingChat(SendMessageCommand cmd) {
         Chat chat = chatApplicationService.getChatForCurrentUser(cmd.chatId());
 
         Context context = contextApplicationService.getContext(chat.getId());
 
         log.info("Context: {}", context.getInnerContexts());
 
-        AiClientResponse ai = aiClient.sendMessageRequest(cmd.content(), context, test);
+        AiClientResponse ai = aiClient.sendMessageRequest(cmd.content(), context);
 
         log.info("Response from AI, text: {}, context: {}", ai.getMessage(), ai.getContext());
 
@@ -96,17 +96,14 @@ public class MessageUseCase {
     }
 
     private MessageResponse saveMessagesAndContext(Chat chat, User user, List<InnerContext> context, String userMessageContent, String aiMessageContent) {
-        CompletableFuture<Message> userFuture =
-                messageApplicationService.createUserMessageAsync(chat, user, userMessageContent);
+        Message userFuture =
+                messageApplicationService.createUserMessage(chat, user, userMessageContent);
 
-        CompletableFuture<Message> aiFuture =
-                messageApplicationService.createAiMessageAsync(chat, user, aiMessageContent);
-
-        userFuture.join();
-        Message aiMsg = aiFuture.join();
+        Message aiFuture =
+                messageApplicationService.createAiMessage(chat, user, aiMessageContent);
 
         contextApplicationService.saveContext(chat, context);
 
-        return messageMapper.toResponse(aiMsg);
+        return messageMapper.toResponse(aiFuture);
     }
 }

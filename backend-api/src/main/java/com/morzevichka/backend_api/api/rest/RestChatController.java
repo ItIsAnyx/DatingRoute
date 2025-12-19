@@ -60,10 +60,9 @@ public class RestChatController {
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = DefaultErrorResponse.class))}),
     })
     public ResponseEntity<ChatCreateResponse> createChat(
-            @RequestBody @Valid ChatCreateRequest request,
-            @RequestParam(defaultValue = "false")  boolean test
+            @RequestBody @Valid ChatCreateRequest request
     ) {
-        ChatCreateResponse response = chatUseCase.createChat(request, test);
+        ChatCreateResponse response = chatUseCase.createChat(request);
         URI location = URI.create("/chats/" + response.getId());
         return ResponseEntity.created(location).body(response);
     }
@@ -121,9 +120,8 @@ public class RestChatController {
     @Operation(summary = "send a message (temp)")
     @Deprecated
     public ResponseEntity<MessageResponse> sendMessage(
-            @RequestBody @Valid MessageRequest request,
-            @RequestParam(defaultValue = "false") boolean test) {
-        MessageResponse response = messageUseCase.send(request, test);
+            @RequestBody @Valid MessageRequest request) {
+        MessageResponse response = messageUseCase.send(request);
         return ResponseEntity.ok(response);
     }
 }

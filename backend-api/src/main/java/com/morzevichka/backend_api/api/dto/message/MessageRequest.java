@@ -10,7 +10,5 @@ public record MessageRequest(
         @JsonProperty("chat_id")
         Long chatId,
         @NotBlank(message = "Сообщение пустое")
-        String message,
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        boolean test
+        String message
 ) {}

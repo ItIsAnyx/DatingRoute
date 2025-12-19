@@ -228,7 +228,7 @@ const sendMessage = async (text) => {
   if (activeChat.value.id > 1000000) {
     loading.value = true
     try {
-      const response = await axios.post('/api/chats?test=true', { message: text }, { headers: getAuthHeaders() })
+      const response = await axios.post('/api/chats', { message: text }, { headers: getAuthHeaders() })
       const responseData = response.data;
       activeChat.value.id = responseData.id;
       activeChat.value.title = responseData.title || 'Новый маршрут';
@@ -249,7 +249,7 @@ const sendMessage = async (text) => {
     }
   } else {
     // Если чат уже существует, отправляем сообщение через WebSocket
-    wsSendMessage(activeChat.value.id, text, true) // true для тестового режима
+    wsSendMessage(activeChat.value.id, text)
   }
 }
 

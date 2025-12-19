@@ -26,18 +26,17 @@ public class AiClient {
     void setWebClient() {
         this.webClient = WebClient.builder()
                 .baseUrl(properties.getUrl())
-                .defaultHeader("AI_SECRET_KEY", properties.getSecretKey())
+                .defaultHeader("AI_BACKEND_KEY", properties.getSecretKey())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
 
-    public AiCreateClientResponse createChatRequest(String prompt, Boolean test) {
+    public AiCreateClientResponse createChatRequest(String prompt) {
         AiCreateClientRequest request = new AiCreateClientRequest(prompt);
 
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder
                         .path("/api/response/create")
-                        .queryParam("test", test)
                         .build()
                 )
                 .bodyValue(request)
@@ -46,13 +45,12 @@ public class AiClient {
                 .block();
     }
 
-    public AiClientResponse sendMessageRequest(String prompt, Context context, Boolean test) {
+    public AiClientResponse sendMessageRequest(String prompt, Context context) {
         AiClientRequest request = new AiClientRequest(prompt, context.getInnerContexts());
 
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder
                         .path("/api/response")
-                        .queryParam("test", test)
                         .build()
                 )
                 .bodyValue(request)
