@@ -1,4 +1,4 @@
-FROM maven:3.9.11-amazoncorretto-21-alpine AS builder
+FROM maven:3.9.11-amazoncorretto-21 AS builder
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
@@ -23,13 +23,16 @@ COPY --from=corretto-jdk /customjre $JAVA_HOME
 
 ARG APPLICATION_USER=appuser
 RUN adduser --no-create-home -u 1000 -D $APPLICATION_USER
+RUN mkdir /app
 
-RUN mkdir /app \
-	&& chown -R $APPLICATION_USER /app
+COPY --from=builder /app/target/*.jar /app/app.jar
 
-COPY --chown=1000:1000 --from=builder /app/target/*.jar /app/app.jar
+RUN chown -R $APPLICATION_USER /app \
+	&& chmod 755 -R /app
 
 WORKDIR /app
+
+USER 1000
 
 EXPOSE 8080
 

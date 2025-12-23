@@ -3,8 +3,6 @@ services:
     build: ./backend-api
     image: backend-api
     container_name: backend_api
-    ports:
-      - "8081:8081"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - DB_URL=jdbc:postgresql://database:5432
@@ -16,7 +14,7 @@ services:
       - REDIS_HOST=cache
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - FRONTEND_SERVICE_URL=http://localhost:8080
+      - FRONTEND_SERVICE_URL=https://dating-route.ddns.net
       - AI_SERVICE_URL=http://ai:8082
       - MAP_SERVICE_URL=http://map:8083
     depends_on:
@@ -24,6 +22,8 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
+    ports:
+      - "8081:8081"
     networks:
       - app-network
     healthcheck:
@@ -36,8 +36,6 @@ services:
     build: ./Python/AI
     image: ai
     container_name: ai
-    ports:
-      - "8082:8082"
     environment:
       - AI_SECRET_KEY=${AI_SECRET_KEY}
       - AI_BACKEND_KEY=${AI_BACKEND_KEY}
@@ -55,8 +53,6 @@ services:
     build: ./Python/Map
     image: map
     container_name: map
-    ports:
-      - "8083:8083"
     environment:
       - GEOCODER_KEY=${GEOCODER_KEY}
       - GEOSUGGEST_KEY=${GEOSUGGEST_KEY}
@@ -73,10 +69,10 @@ services:
     build: ./Frontend
     image: frontend
     container_name: frontend 
-    ports:
-      - "8080:8080"
     depends_on:
       - backend-api
+    ports:
+      - "8080:8080"
     networks:
       - app-network
     
@@ -89,8 +85,6 @@ services:
       POSTGRES_DB: ${DB_DATABASE}
     volumes:
       - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     networks:
       - app-network
     healthcheck:
@@ -107,8 +101,6 @@ services:
     command: redis-server --save 20 1 --requirepass $REDIS_PASSWORD
     volumes:
       - cache:/data
-    ports:
-      - "6379:6379"
     networks:
       - app-network
     healthcheck:
