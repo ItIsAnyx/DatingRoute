@@ -46,7 +46,7 @@ import ChatsSidebar from '@/components/chats/ChatsSidebar.vue'
 import ChatArea from '@/components/chats/ChatArea.vue'
 import EmptyChatView from '@/components/chats/EmptyChatView.vue'
 // Импортируем наши новые функции
-import { connect, subscribeToChat, sendMessage as wsSendMessage, disconnect } from '@/services/websocketService.js'
+import { connect, subscribeToChat, sendMessage as wsSendMessage, disconnect, isConnected } from '@/services/websocketService.js'
 
 const router = useRouter()
 const activeChat = ref(null)
@@ -148,9 +148,16 @@ const selectChat = async (chat) => {
   activeChat.value = chat
   chat.unreadCount = 0
   
-  // Отписываемся от старого чата, если он был
-  if (stompClientConnection) {
-    // Здесь может быть сложная логика отписки, но для начала можно оставить так
+  // Если соединение еще не установлено, устанавливаем его
+  if (!isConnected()) {
+    try {
+      stompClientConnection = await connect();
+      console.log('WebSocket connection established');
+    } catch (error) {
+      console.error('Failed to establish WebSocket connection:', error);
+      // Здесь можно показать уведомление пользователю
+      return;
+    }
   }
 
   // Загружаем историю, если она еще не загружена
@@ -160,6 +167,9 @@ const selectChat = async (chat) => {
 
   // Подписываемся на сообщения для нового чата
   if (stompClientConnection) {
+    // Отписываемся от предыдущих подписок, если они были
+    // (это может потребовать хранения ссылок на подписки)
+    
     subscribeToChat(chat.id, (message) => {
       // Это callback, который вызовется при получении нового сообщения
       if (message.chat_id === activeChat.value.id) {
@@ -243,13 +253,35 @@ const sendMessage = async (text) => {
       activeChat.value.lastMessage = aiMsg.text;
       activeChat.value.updatedAt = aiMsg.timestamp;
     } catch (error) {
-      // ... обработка ошибки
+      console.error('Error creating chat:', error);
+      // Добавляем сообщение об ошибке в чат
+      const errorMsg = { 
+        id: Date.now(), 
+        type: 'ai', 
+        text: 'Извините, произошла ошибка. Попробуйте еще раз.', 
+        timestamp: new Date(),
+        isError: true
+      }
+      activeChat.value.messages.push(errorMsg);
     } finally {
       loading.value = false
     }
   } else {
     // Если чат уже существует, отправляем сообщение через WebSocket
-    wsSendMessage(activeChat.value.id, text)
+    try {
+      wsSendMessage(activeChat.value.id, text)
+    } catch (error) {
+      console.error('Error sending message via WebSocket:', error);
+      // Добавляем сообщение об ошибке в чат
+      const errorMsg = { 
+        id: Date.now(), 
+        type: 'ai', 
+        text: 'Не удалось отправить сообщение. Проверьте подключение к интернету.', 
+        timestamp: new Date(),
+        isError: true
+      }
+      activeChat.value.messages.push(errorMsg);
+    }
   }
 }
 
@@ -264,6 +296,18 @@ onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
   loadChats()
+  
+  // Устанавливаем WebSocket соединение при загрузке страницы
+  connect().then(client => {
+    stompClientConnection = client
+  }).catch(error => {
+    console.error('Failed to establish WebSocket connection on mount:', error)
+  })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile)
+  disconnect()
 })
 </script>
 
