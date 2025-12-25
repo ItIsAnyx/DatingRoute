@@ -17,7 +17,13 @@
 
       <MessageList :messages="chat.messages" :user-initials="userInitials" :loading="loading" />
 
-      <MessageInput @send="$emit('send', $event)" :disabled="loading" />
+      <MessageInput 
+        @send="$emit('send', $event)" 
+        @generate-points="$emit('generate-points')"
+        @generate-route="$emit('generate-route')"
+        :disabled="loading" 
+        :has-route="hasRoute"
+      />
     </div>
   </section>
 </template>
@@ -29,10 +35,11 @@ import MessageInput from './MessageInput.vue'
 const props = defineProps({
   chat: Object,
   userInitials: String,
-  loading: Boolean
+  loading: Boolean,
+  hasRoute: Boolean
 })
 
-const emit = defineEmits(['clear-chat', 'export-chat', 'delete-chat', 'send'])
+const emit = defineEmits(['clear-chat', 'export-chat', 'delete-chat', 'send', 'generate-points', 'generate-route', 'back'])
 
 const clearChat = () => {
   emit('clear-chat')
@@ -68,8 +75,6 @@ const handleDeleteChat = () => {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #808080;
 }
-
-
 
 .chat-title-main {
   font-weight: 600;

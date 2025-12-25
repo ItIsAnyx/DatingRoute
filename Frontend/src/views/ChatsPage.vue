@@ -18,7 +18,10 @@
           :chat="activeChat"
           :user-initials="userInitials"
           :loading="loading"
+          :has-route="hasRoute"
           @send="sendMessage"
+          @generate-points="generatePoints"
+          @generate-route="generateRoute"
           @back="closeChat"
           @clear-chat="clearChat"
           @export-chat="exportChat"
@@ -34,8 +37,6 @@
     </main>
   </div>
 </template>
-
-<!-- ... (скрипт и стили уже обновлены выше) ... -->
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
@@ -60,6 +61,7 @@ const activeChat = ref(null);
 const isMobile = ref(false);
 const loading = ref(false);
 const chats = ref([]);
+const currentRouteId = ref(null);
 let stompClientConnection = null;
 
 const promptSuggestions = [
@@ -75,6 +77,8 @@ const userInitials = computed(() => {
 });
 
 const isChatOpen = computed(() => isMobile.value && !!activeChat.value);
+
+const hasRoute = computed(() => !!currentRouteId.value);
 
 const getAuthToken = () => localStorage.getItem('access_token');
 const getAuthHeaders = () => {
@@ -123,12 +127,134 @@ const loadChatHistory = async (chatId) => {
   }
 };
 
+const checkRouteExists = async (chatId) => {
+  try {
+    const response = await axios.get(`/api/routes?chatId=${chatId}`, { headers: getAuthHeaders() });
+    if (response.data.exists) {
+      currentRouteId.value = response.data.route_id;
+      await loadRoutePoints();
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Ошибка при проверке маршрута:', error);
+    return false;
+  }
+};
+
+const loadRoutePoints = async () => {
+  if (!currentRouteId.value) return;
+  
+  try {
+    const response = await axios.get(`/api/routes/${currentRouteId.value}/places`, { headers: getAuthHeaders() });
+    const points = response.data.points;
+    
+    // Добавляем точки в чат как системное сообщение
+    if (points && points.length > 0 && activeChat.value) {
+      const pointsMessage = {
+        id: Date.now(),
+        type: 'system',
+        text: `Точки маршрута:\n${points.map(point => `• ${point}`).join('\n')}`,
+        timestamp: new Date(),
+        isPoints: true
+      };
+      activeChat.value.messages.push(pointsMessage);
+    }
+  } catch (error) {
+    console.error('Ошибка при загрузке точек маршрута:', error);
+  }
+};
+
+const generatePoints = async () => {
+  if (!activeChat.value || loading.value) return;
+  
+  loading.value = true;
+  
+  try {
+    let response;
+    
+    if (currentRouteId.value) {
+      // Если маршрут уже существует, обновляем точки
+      response = await axios.put(`/api/routes/${currentRouteId.value}/places`, {}, { headers: getAuthHeaders() });
+    } else {
+      // Создаем новый маршрут с точками
+      response = await axios.post(`/api/routes?chatId=${activeChat.value.id}`, {}, { headers: getAuthHeaders() });
+      currentRouteId.value = response.data.route_id;
+    }
+    
+    const points = response.data.points;
+    
+    // Добавляем точки в чат как сообщение от AI
+    if (points && points.length > 0) {
+      const pointsMessage = {
+        id: Date.now(),
+        type: 'ai',
+        text: `Предлагаемые точки для вашего маршрута:\n${points.map(point => `• ${point}`).join('\n')}`,
+        timestamp: new Date(),
+        isPoints: true
+      };
+      activeChat.value.messages.push(pointsMessage);
+    }
+  } catch (error) {
+    console.error('Ошибка при генерации точек:', error);
+    if (activeChat.value) {
+      activeChat.value.messages.push({
+        id: Date.now(),
+        type: 'ai',
+        text: 'Извините, не удалось сгенерировать точки маршрута. Попробуйте еще раз.',
+        timestamp: new Date(),
+        isError: true
+      });
+    }
+  } finally {
+    loading.value = false;
+  }
+};
+
+// В ChatsPage.vue, в функции generateRoute
+const generateRoute = async () => {
+  if (!currentRouteId.value || !activeChat.value || loading.value) return;
+  
+  loading.value = true;
+  
+  try {
+    const response = await axios.post(`/api/routes/${currentRouteId.value}/build`, {}, { headers: getAuthHeaders() });
+    
+    // Добавляем сообщение со ссылкой на карту
+    const routeMessage = {
+      id: Date.now(),
+      type: 'ai',
+      text: `Ваш маршрут готов! Вы можете посмотреть его на карте.`,
+      timestamp: new Date(),
+      isRoute: true,
+      routeId: currentRouteId.value  // Добавляем ID маршрута
+    };
+    activeChat.value.messages.push(routeMessage);
+  } catch (error) {
+    console.error('Ошибка при генерации маршрута:', error);
+    if (activeChat.value) {
+      activeChat.value.messages.push({
+        id: Date.now(),
+        type: 'ai',
+        text: 'Извините, не удалось сгенерировать маршрут. Попробуйте еще раз.',
+        timestamp: new Date(),
+        isError: true
+      });
+    }
+  } finally {
+    loading.value = false;
+  }
+};
+
 const deleteChat = async (chatId) => {
   if (!confirm('Вы уверены, что хотите удалить этот чат?')) return;
   try {
     await axios.delete(`/api/chats/${chatId}`, { headers: getAuthHeaders() });
     chats.value = chats.value.filter(chat => chat.id !== chatId);
-    if (activeChat.value?.id === chatId) activeChat.value = null;
+    if (activeChat.value?.id === chatId) {
+      activeChat.value = null;
+      currentRouteId.value = null;
+    }
   } catch (error) {
     console.error('Ошибка при удалении чата:', error);
     alert('Не удалось удалить чат');
@@ -139,8 +265,12 @@ const deleteChat = async (chatId) => {
 const selectChat = async (chat) => {
   activeChat.value = chat;
   chat.unreadCount = 0;
+  currentRouteId.value = null; // Сбрасываем ID маршрута при переключении чата
 
   if (chat.messages.length === 0) await loadChatHistory(chat.id);
+  
+  // Проверяем наличие маршрута для этого чата
+  await checkRouteExists(chat.id);
 
   if (stompClientConnection) {
     subscribeToChat(chat.id, (message) => {
@@ -159,7 +289,10 @@ const selectChat = async (chat) => {
   }
 };
 
-const closeChat = () => activeChat.value = null;
+const closeChat = () => {
+  activeChat.value = null;
+  currentRouteId.value = null;
+};
 
 const createNewChat = () => {
   const tempId = Date.now();
@@ -173,6 +306,7 @@ const createNewChat = () => {
   };
   chats.value.unshift(newChat);
   activeChat.value = newChat;
+  currentRouteId.value = null;
   return newChat;
 };
 
@@ -181,12 +315,17 @@ const clearChat = () => {
     activeChat.value.messages = [];
     activeChat.value.lastMessage = 'Чат очищен';
     activeChat.value.updatedAt = new Date();
+    currentRouteId.value = null;
   }
 };
 
 const exportChat = () => {
   if (activeChat.value) {
-    const chatData = { title: activeChat.value.title, messages: activeChat.value.messages };
+    const chatData = { 
+      title: activeChat.value.title, 
+      messages: activeChat.value.messages,
+      routeId: currentRouteId.value
+    };
     const dataStr = JSON.stringify(chatData, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
     const exportFileDefaultName = `chat_${activeChat.value.title}_${Date.now()}.json`;

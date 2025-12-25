@@ -4,10 +4,24 @@
       v-for="msg in messages"
       :key="msg.id"
       class="message"
-      :class="[msg.type, { 'error-message': msg.isError }]"
+      :class="[msg.type, { 'error-message': msg.isError, 'points-message': msg.isPoints, 'route-message': msg.isRoute }]"
     >
-      <div class="message-content">
-        <div class="message-text">{{ msg.text }}</div>
+      <div class="message-avatar" v-if="msg.type === 'ai' || msg.type === 'system'">
+        <span v-if="msg.type === 'ai'">AI</span>
+        <span v-else-if="msg.type === 'system'">📍</span>
+      </div>
+      
+    <!-- В MessageList.vue, в шаблоне для сообщений -->
+    <div class="message-content">
+      <div class="message-text">{{ msg.text }}</div>
+      <div v-if="msg.isRoute && msg.routeId" class="map-link">
+        <router-link :to="`/map/${msg.routeId}`" class="map-button">Открыть на карте</router-link>
+      </div>
+      <div class="message-time">{{ formatTime(msg.timestamp) }}</div>
+    </div>
+          
+      <div class="message-avatar" v-if="msg.type === 'user'">
+        <span>{{ userInitials }}</span>
       </div>
     </div>
     
@@ -75,14 +89,34 @@ watch(
   flex-direction: row-reverse;
 }
 
-.message.ai {
+.message.ai, .message.system {
   align-self: flex-start;
+}
+
+.message-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #252525;
+  color: rgb(145, 145, 145);
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.message.user .message-avatar {
+  background: #00ADB5;
+  color: white;
 }
 
 .message-content {
   background: #808080;
   padding: 0.75rem 1rem;
   border-radius: 12px;
+  position: relative;
 }
 
 .message.user .message-content {
@@ -90,9 +124,28 @@ watch(
   color: white;
 }
 
+.message.system .message-content {
+  background: #6366f1;
+  color: white;
+}
+
 .message.error-message .message-content {
   background: #252525;
   color: rgb(255, 112, 112);
+}
+
+.message.points-message .message-content {
+  background: #6366f1;
+  color: white;
+}
+
+.message.route-message .message-content {
+  background: #10b981;
+  color: white;
+}
+
+.message-text {
+  white-space: pre-line;
 }
 
 .message-time {
@@ -105,17 +158,29 @@ watch(
   color: rgba(255, 255, 255, 0.8);
 }
 
-.user-avatar-small {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: #252525;
-  color: rgb(145, 145, 145);
+.message.system .message-time,
+.message.points-message .message-time,
+.message.route-message .message-time {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* В MessageList.vue, в секции style */
+.map-link {
+  margin-top: 0.5rem;
+}
+
+.map-button {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  text-decoration: none;
   border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.7rem;
+  transition: background 0.2s;
+}
+
+.map-button:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .loading-content {
