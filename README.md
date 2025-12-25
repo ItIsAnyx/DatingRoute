@@ -1,5 +1,7 @@
 # Dating Route (ENG/RUS)
+
 **ENG**
+
 DatingRoute is a flexible web application for planning routes using an AI assistant.
 The application allows users to communicate with the DeepSeek-V3.2 neural network, which helps plan routes for dates, walks with friends, or leisure activities. Based on a dialog with the user, the AI generates a route and provides a ready-to-use link to Yandex Maps with all selected locations.
 
@@ -38,6 +40,7 @@ docker compose up -d --build
 ---
 
 **RUS**
+
 DatingRoute - это гибкое веб-приложение для планирования маршрутов с использованием ИИ-ассистента.
 Приложение позволяет общаться с нейросетью DeepSeek-V3.2, которая помогает спланировать маршрут для свидания, прогулки с друзьями или отдыха. На основе диалога с пользователем модель формирует маршрут и предоставляет готовую ссылку на Яндекс Карты со всеми выбранными точками.
 
@@ -72,4 +75,4 @@ GEOSUGGEST_KEY - секретный API-ключ геосаджеста Янде
 docker compose up -d --build
 ```
 
-6) После запуска приложение будет доступно по адресу: localhost:8080/
+6) После запуска приложение будет доступно по адресу: http://localhost:8080
