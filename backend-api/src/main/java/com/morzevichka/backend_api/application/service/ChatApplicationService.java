@@ -7,6 +7,11 @@ import com.morzevichka.backend_api.domain.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.security.Principal;
 import java.util.List;
 
 @Service
@@ -29,6 +34,14 @@ public class ChatApplicationService {
 
         chatService.isUserInChat(user.getId(), chat.getUser().getId());
 
+        return chat;
+    }
+
+    public Chat getChatForCurrentUserWs(Long chatId, Principal principal) {
+        Chat chat = chatRepository.findById(chatId);
+        User user = userApplicationService.findByEmail(principal.getName());
+
+        chatService.isUserInChat(user.getId(), chat.getUser().getId());
         return chat;
     }
 

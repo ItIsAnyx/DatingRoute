@@ -10,26 +10,32 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class AuthenticatorService {
 
     private final JwtProvider jwtProvider;
-    private final UserDetailsService userDetailsService;
+    private final CustomUserDetailsService userDetailsService;
 
     public UsernamePasswordAuthenticationToken getAuthenticatedOfFail(final String token, HttpServletRequest request) {
         final String userEmail = jwtProvider.extractUsername(token);
 
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (Objects.nonNull(userEmail) && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+
             if (jwtProvider.isTokenValid(token)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
                         userDetails.getAuthorities()
                 );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                if (Objects.nonNull(request)) {
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                }
+
                 return authToken;
             }
         }

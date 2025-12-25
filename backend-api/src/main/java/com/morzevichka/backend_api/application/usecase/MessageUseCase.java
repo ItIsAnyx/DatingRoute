@@ -25,8 +25,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -58,9 +59,15 @@ public class MessageUseCase {
     }
 
     @Transactional
-    public MessageResponse send(MessageRequest request) {
-        User user = userApplicationService.getCurrentUser();
-        SendMessageCommand cmd = new SendMessageCommand(request.chatId(), user, request.message());
+    public MessageResponse send(MessageRequest request, Long chatId, Principal principal) {
+        User user;
+        if (Objects.nonNull(principal)) {
+            user = userApplicationService.findByEmail(principal.getName());
+        } else {
+            user = userApplicationService.getCurrentUser();
+        }
+
+        SendMessageCommand cmd = new SendMessageCommand(chatId, user, request.message(), principal);
 
         if (cmd.chatId() == null) {
             return sendFirstMessage(cmd);
@@ -82,7 +89,12 @@ public class MessageUseCase {
     }
 
     private MessageResponse sendExistingChat(SendMessageCommand cmd) {
-        Chat chat = chatApplicationService.getChatForCurrentUser(cmd.chatId());
+        Chat chat;
+        if (Objects.nonNull(cmd.principal())) {
+            chat = chatApplicationService.getChatForCurrentUserWs(cmd.chatId(), cmd.principal());
+        } else {
+            chat = chatApplicationService.getChatForCurrentUser(cmd.chatId());
+        }
 
         Context context = contextApplicationService.getContext(chat.getId());
 

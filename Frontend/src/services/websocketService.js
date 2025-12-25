@@ -1,5 +1,6 @@
 // src/services/websocketService.js
 import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client'
 
 let stompClient = null;
 
@@ -11,12 +12,8 @@ export function connect() {
     return Promise.reject(new Error('Authentication token not found.'));
   }
 
-  // Используем нативный WebSocket, а не SockJS
-  // URL меняется с http:// на ws://
-  const wsUrl = `ws://localhost:8081/ws`; 
-
   stompClient = new Client({
-    webSocketFactory: () => new WebSocket(wsUrl, [token]),
+    webSocketFactory: () => new SockJS('http://localhost:8081/ws'),
     connectHeaders: {
       Authorization: `Bearer ${token}`
     },
@@ -47,7 +44,6 @@ export function connect() {
   });
 }
 
-// Остальные функции остаются без изменений
 export function subscribeToChat(chatId, callback) {
   if (!stompClient || !stompClient.connected) {
     console.error('WebSocket is not connected. Cannot subscribe.');
@@ -70,18 +66,16 @@ export function sendMessage(chatId, text) {
     return;
   }
 
-  const destination = '/app/sendMessage';
+  const destination = `/app/chat/${chatId}/sendMessage`;
   const body = JSON.stringify({
-    chat_id: chatId,
-    message: text,
-    test: false
+    message: text
   });
 
   stompClient.publish({
     destination,
     body
   });
-  
+
   console.log('📤 Message sent to', destination, ':', body);
 }
 
