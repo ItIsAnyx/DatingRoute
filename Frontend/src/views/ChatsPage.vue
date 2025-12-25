@@ -174,10 +174,8 @@ const generatePoints = async () => {
     let response;
     
     if (currentRouteId.value) {
-      // Если маршрут уже существует, обновляем точки
       response = await axios.put(`/api/routes/${currentRouteId.value}/places`, {}, { headers: getAuthHeaders() });
     } else {
-      // Создаем новый маршрут с точками
       response = await axios.post(`/api/routes?chatId=${activeChat.value.id}`, {}, { headers: getAuthHeaders() });
       currentRouteId.value = response.data.route_id;
     }
@@ -217,17 +215,14 @@ const generateRoute = async () => {
   
   loading.value = true;
   
-  try {
-    const response = await axios.post(`/api/routes/${currentRouteId.value}/build`, {}, { headers: getAuthHeaders() });
-    
-    // Добавляем сообщение со ссылкой на карту
+  try {  
     const routeMessage = {
       id: Date.now(),
       type: 'ai',
       text: `Ваш маршрут готов! Вы можете посмотреть его на карте.`,
       timestamp: new Date(),
       isRoute: true,
-      routeId: currentRouteId.value  // Добавляем ID маршрута
+      routeId: currentRouteId.value
     };
     activeChat.value.messages.push(routeMessage);
   } catch (error) {

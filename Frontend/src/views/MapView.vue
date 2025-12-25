@@ -103,7 +103,7 @@ const loadYandexMaps = () => {
       return
     }
     
-    fetch('/api/config/maps-key', { headers: getAuthHeaders() })
+    fetch('/api/routes/maps-key', { headers: getAuthHeaders() })
       .then(response => {
         if (!response.ok) {
           throw new Error(`Ошибка загрузки ключа API: ${response.statusText}`);
