@@ -11,14 +11,13 @@
         <span v-else-if="msg.type === 'system'">📍</span>
       </div>
       
-    <!-- В MessageList.vue, в шаблоне для сообщений -->
-    <div class="message-content">
-      <div class="message-text">{{ msg.text }}</div>
-      <div v-if="msg.isRoute && msg.routeId" class="map-link">
-        <router-link :to="`/map/${msg.routeId}`" class="map-button">Открыть на карте</router-link>
+      <div class="message-content">
+        <div class="message-text">{{ msg.text }}</div>
+        <div v-if="msg.isRoute && msg.routeId" class="map-link">
+          <router-link :to="`/map/${msg.routeId}`" class="map-button">Открыть на карте</router-link>
+        </div>
+        <div class="message-time">{{ formatTime(msg.timestamp) }}</div>
       </div>
-      <div class="message-time">{{ formatTime(msg.timestamp) }}</div>
-    </div>
           
       <div class="message-avatar" v-if="msg.type === 'user'">
         <span>{{ userInitials }}</span>
@@ -26,9 +25,7 @@
     </div>
     
     <div v-if="loading" class="message ai">
-      <div class="message-avatar">
-        <span>AI</span>
-      </div>
+      <div class="message-avatar"><span>AI</span></div>
       <div class="message-content loading-content">
         <div class="typing-indicator">
           <span></span>
@@ -72,10 +69,10 @@ watch(
 .messages-container {
   flex: 1;
   overflow-y: auto;
-  padding: 1.5rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .message {
@@ -97,13 +94,13 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   background: #252525;
   color: rgb(145, 145, 145);
-  border-radius: 6px;
+  border-radius: 50%;
   font-weight: 600;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   flex-shrink: 0;
 }
 
@@ -113,9 +110,9 @@ watch(
 }
 
 .message-content {
-  background: #808080;
+  background: #303030;
   padding: 0.75rem 1rem;
-  border-radius: 12px;
+  border-radius: 18px;
   position: relative;
 }
 
@@ -146,10 +143,11 @@ watch(
 
 .message-text {
   white-space: pre-line;
+  word-wrap: break-word;
 }
 
 .message-time {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #9ca3af;
   margin-top: 0.25rem;
 }
@@ -164,19 +162,19 @@ watch(
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* В MessageList.vue, в секции style */
 .map-link {
   margin-top: 0.5rem;
 }
 
 .map-button {
   display: inline-block;
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.8rem;
   background: rgba(255, 255, 255, 0.2);
   color: white;
   text-decoration: none;
-  border-radius: 6px;
-  transition: background 0.2s;
+  border-radius: 12px;
+  transition: background-color 0.2s;
+  font-size: 0.85rem;
 }
 
 .map-button:hover {
@@ -186,7 +184,7 @@ watch(
 .loading-content {
   display: flex;
   align-items: center;
-  padding: 1rem;
+  padding: 0.75rem 1rem;
 }
 
 .typing-indicator {
@@ -202,20 +200,29 @@ watch(
   animation: typing 1.4s infinite;
 }
 
-.typing-indicator span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.typing-indicator span:nth-child(3) {
-  animation-delay: 0.4s;
-}
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
 
 @keyframes typing {
-  0%, 60%, 100% {
-    transform: translateY(0);
-  }
-  30% {
-    transform: translateY(-10px);
-  }
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-10px); }
+}
+
+@media (max-width: 768px) {
+  .messages-container { padding: 0.75rem; gap: 0.75rem; }
+  .message { max-width: 90%; }
+  .message-avatar { width: 32px; height: 32px; font-size: 0.7rem; }
+  .message-content { padding: 0.6rem 0.8rem; }
+  .message-text { font-size: 0.9rem; }
+  .message-time { font-size: 0.65rem; }
+}
+
+@media (max-width: 480px) {
+  .messages-container { padding: 0.5rem; gap: 0.5rem; }
+  .message { max-width: 95%; }
+  .message-avatar { width: 28px; height: 28px; font-size: 0.6rem; }
+  .message-content { padding: 0.5rem 0.7rem; }
+  .message-text { font-size: 0.85rem; }
+  .message-time { font-size: 0.6rem; }
 }
 </style>

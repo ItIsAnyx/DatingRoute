@@ -5,38 +5,65 @@
     <main class="chats-main">
       <div class="chats-container">
         <ChatsSidebar
-          v-if="!isChatOpen"
+          v-if="isMobile"
           :chats="chats"
           :active-chat="activeChat"
+          :is-mobile="isMobile"
+          :sidebar-open="sidebarOpen"
+          @select="selectChat"
+          @create="createNewChat"
+          @delete="deleteChat" 
+        />
+        
+        <ChatsSidebar
+          v-else
+          :chats="chats"
+          :active-chat="activeChat"
+          :is-mobile="isMobile"
+          :sidebar-open="true"
           @select="selectChat"
           @create="createNewChat"
           @delete="deleteChat" 
         />
 
-        <ChatArea
-          v-if="activeChat"
-          :chat="activeChat"
-          :user-initials="userInitials"
-          :loading="loading"
-          :has-route="hasRoute"
-          @send="sendMessage"
-          @generate-points="generatePoints"
-          @generate-route="generateRoute"
-          @back="closeChat"
-          @clear-chat="clearChat"
-          @export-chat="exportChat"
-          @delete-chat="deleteChat" 
-        />
+        <div class="chat-content-wrapper">
+          <button 
+            v-if="isMobile" 
+            class="sidebar-toggle-btn" 
+            @click="toggleSidebar"
+          >
+            ☰ Чаты
+          </button>
 
-        <EmptyChatView
-          v-else
-          :prompt-suggestions="promptSuggestions"
-          @select-suggestion="handleSuggestion"
-        />
+          <div class="chat-content">
+            <ChatArea
+              v-if="activeChat"
+              :chat="activeChat"
+              :user-initials="userInitials"
+              :loading="loading"
+              :has-route="hasRoute"
+              :is-mobile="isMobile"
+              @send="sendMessage"
+              @generate-points="generatePoints"
+              @generate-route="generateRoute"
+              @back="closeChat"
+              @clear-chat="clearChat"
+              @export-chat="exportChat"
+              @delete-chat="deleteChat" 
+            />
+
+            <EmptyChatView
+              v-else
+              :prompt-suggestions="promptSuggestions"
+              @select-suggestion="handleSuggestion"
+            />
+          </div>
+        </div>
       </div>
     </main>
   </div>
 </template>
+
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
@@ -59,6 +86,7 @@ import {
 const router = useRouter();
 const activeChat = ref(null);
 const isMobile = ref(false);
+const sidebarOpen = ref(false);
 const loading = ref(false);
 const chats = ref([]);
 const currentRouteId = ref(null);
@@ -76,9 +104,11 @@ const userInitials = computed(() => {
   return user.name ? user.name.charAt(0).toUpperCase() : 'U';
 });
 
-const isChatOpen = computed(() => isMobile.value && !!activeChat.value);
-
 const hasRoute = computed(() => !!currentRouteId.value);
+
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value;
+};
 
 const getAuthToken = () => localStorage.getItem('access_token');
 const getAuthHeaders = () => {
@@ -86,7 +116,6 @@ const getAuthHeaders = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-// --- API Functions ---
 const loadChats = async () => {
   try {
     const response = await axios.get('/api/chats', { headers: getAuthHeaders() });
@@ -113,7 +142,7 @@ const loadChatHistory = async (chatId) => {
         id: msg.id,
         type: msg.message_type === 'USER_MESSAGE' ? 'user' : 'ai',
         text: msg.content,
-        timestamp: new Date(msg.send_date)
+        timestamp: new Date(msg.send_date.replace(' ', 'T') + 'Z')
       }));
       if (chat.messages.length > 0) {
         const lastMsg = chat.messages[chat.messages.length - 1];
@@ -123,7 +152,7 @@ const loadChatHistory = async (chatId) => {
     }
   } catch (error) {
     console.error('Ошибка при загрузке истории чата:', error);
-    if (error.response?.status === 404) alert('Чат не найден');
+    if (error.response?.status === 404) console.error('Чат не найден');
   }
 };
 
@@ -149,7 +178,6 @@ const loadRoutePoints = async () => {
     const response = await axios.get(`/api/routes/${currentRouteId.value}/places`, { headers: getAuthHeaders() });
     const points = response.data.points;
     
-    // Добавляем точки в чат как системное сообщение
     if (points && points.length > 0 && activeChat.value) {
       const pointsMessage = {
         id: Date.now(),
@@ -182,7 +210,6 @@ const generatePoints = async () => {
     
     const points = response.data.points;
     
-    // Добавляем точки в чат как сообщение от AI
     if (points && points.length > 0) {
       const pointsMessage = {
         id: Date.now(),
@@ -209,7 +236,6 @@ const generatePoints = async () => {
   }
 };
 
-// В ChatsPage.vue, в функции generateRoute
 const generateRoute = async () => {
   if (!currentRouteId.value || !activeChat.value || loading.value) return;
   
@@ -252,19 +278,16 @@ const deleteChat = async (chatId) => {
     }
   } catch (error) {
     console.error('Ошибка при удалении чата:', error);
-    alert('Не удалось удалить чат');
   }
 };
 
-// --- UI Functions ---
 const selectChat = async (chat) => {
   activeChat.value = chat;
   chat.unreadCount = 0;
-  currentRouteId.value = null; // Сбрасываем ID маршрута при переключении чата
+  currentRouteId.value = null;
 
   if (chat.messages.length === 0) await loadChatHistory(chat.id);
   
-  // Проверяем наличие маршрута для этого чата
   await checkRouteExists(chat.id);
 
   if (stompClientConnection) {
@@ -274,19 +297,27 @@ const selectChat = async (chat) => {
           id: message.id,
           type: 'ai',
           text: message.content,
-          timestamp: new Date(message.send_date)
+          timestamp: new Date(message.send_date.replace(' ', 'T') + 'Z')
         };
         activeChat.value.messages.push(aiMsg);
         activeChat.value.lastMessage = aiMsg.text;
         activeChat.value.updatedAt = aiMsg.timestamp;
+        loading.value = false;
       }
     });
+  }
+
+  if (isMobile.value) {
+    sidebarOpen.value = false;
   }
 };
 
 const closeChat = () => {
   activeChat.value = null;
   currentRouteId.value = null;
+  if (isMobile.value) {
+    sidebarOpen.value = true;
+  }
 };
 
 const createNewChat = () => {
@@ -302,6 +333,11 @@ const createNewChat = () => {
   chats.value.unshift(newChat);
   activeChat.value = newChat;
   currentRouteId.value = null;
+  
+  if (isMobile.value) {
+    sidebarOpen.value = false;
+  }
+  
   return newChat;
 };
 
@@ -351,7 +387,7 @@ const sendMessage = async (text) => {
         id: responseData.message.id,
         type: 'ai',
         text: responseData.message.content,
-        timestamp: new Date(responseData.message.send_date)
+        timestamp: new Date(responseData.message.send_date.replace(' ', 'T') + 'Z')
       };
       activeChat.value.messages.push(aiMsg);
       activeChat.value.lastMessage = aiMsg.text;
@@ -368,6 +404,7 @@ const sendMessage = async (text) => {
             activeChat.value.messages.push(aiMsg)
             activeChat.value.lastMessage = aiMsg.text
             activeChat.value.updatedAt = aiMsg.timestamp
+            loading.value = false;
           }
         })
       }
@@ -384,10 +421,12 @@ const sendMessage = async (text) => {
       loading.value = false;
     }
   } else {
+    loading.value = true;
     try {
       wsSendMessage(activeChat.value.id, text);
     } catch (error) {
       console.error('Error sending message via WebSocket:', error);
+      loading.value = false;
       activeChat.value.messages.push({
         id: Date.now(),
         type: 'ai',
@@ -404,7 +443,12 @@ const handleSuggestion = (text) => {
   sendMessage(text);
 };
 
-const checkMobile = () => (isMobile.value = window.innerWidth <= 768);
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768;
+  if (!isMobile.value) {
+    sidebarOpen.value = false;
+  }
+};
 
 onMounted(() => {
   checkMobile();
@@ -426,20 +470,67 @@ onUnmounted(() => {
 
 <style scoped>
 .chats-page {
-  min-height: 100vh;
-  background: #191919;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #191919;
 }
 
 .chats-main {
-  padding-top: 69px;
-  min-height: calc(100vh - 69px);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-top: 80px; 
 }
 
 .chats-container {
+  flex: 1;
   display: flex;
-  max-width: 1400px;
-  margin: 0 auto;
-  height: calc(100vh - 80px);
-  background: #191919;
+  position: relative;
+  overflow: hidden;
 }
+
+.chat-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  background-color: #191919;
+}
+
+.sidebar-toggle-btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 30;
+  background: #00ADB5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.sidebar-toggle-btn:active {
+  background-color: #004d51;
+}
+
+.chat-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (min-width: 769px) {
+  .sidebar-toggle-btn {
+    display: none;
+  }
+}
+
 </style>

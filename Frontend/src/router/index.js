@@ -1,9 +1,10 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import AuthView from '../views/AuthView.vue'
 import Chats from '../views/ChatsPage.vue'
 import MapView from '../views/MapView.vue'
+import FeaturesView from '../views/FeaturesView.vue'
+import AboutView from '../views/AboutView.vue'
 
 const routes = [
   {
@@ -26,6 +27,16 @@ const routes = [
     name: 'map',
     component: MapView,
     props: true
+  },
+   {
+    path: '/features',
+    name: 'features',
+    component: FeaturesView
+  },
+  {
+    path: '/about',
+    name: 'about',
+    component: AboutView
   }
 ]
 

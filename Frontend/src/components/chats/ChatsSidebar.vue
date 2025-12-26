@@ -1,5 +1,5 @@
 <template>
-  <aside class="chats-sidebar">
+  <aside class="chats-sidebar" :class="{ 'is-mobile': isMobile, 'is-open': sidebarOpen }">
     <div class="sidebar-header">
       <h2>Чаты</h2>
       <button class="new-chat-btn" @click="$emit('create')">
@@ -19,24 +19,24 @@
       >
         <div class="chat-info">
           <div class="chat-title">{{ chat.title }}</div>
-          <div class="chat-preview">{{ chat.lastMessage || 'Пустой чат' }}</div>
         </div>
       </div>
     </div>
 
-    <!-- Контекстное меню для удаления -->
-    <div v-if="contextMenuVisible" class="context-menu" :style="{ top: contextMenuY + 'px', left: contextMenuX + 'px' }" @click="hideContextMenu">
+    <div v-if="contextMenuVisible" class="context-menu" :style="menuStyle" @click="hideContextMenu">
       <button @click.stop="handleDeleteChat">Удалить чат</button>
     </div>
   </aside>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 
 const props = defineProps({
   chats: Array,
-  activeChat: Object
+  activeChat: Object,
+  isMobile: Boolean,
+  sidebarOpen: Boolean
 })
 
 const emit = defineEmits(['select', 'create', 'delete'])
@@ -45,6 +45,15 @@ const contextMenuVisible = ref(false)
 const contextMenuX = ref(0)
 const contextMenuY = ref(0)
 const selectedChatForDelete = ref(null)
+
+const menuStyle = computed(() => {
+  const rightEdge = window.innerWidth - 200; 
+  const left = contextMenuX.value > rightEdge ? rightEdge : contextMenuX.value;
+  return {
+    top: `${contextMenuY.value}px`,
+    left: `${left}px`
+  }
+})
 
 const showContextMenu = (event, chat) => {
   contextMenuVisible.value = true
@@ -81,14 +90,14 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ... (ваши существующие стили) ... */
 .chats-sidebar {
   width: 400px;
+  background: #191919;
   border-right: 1px solid #404040;
   display: flex;
   flex-direction: column;
-  background: #191919;
-  position: relative; /* Для позиционирования контекстного меню */
+  flex-shrink: 0; 
+  position: relative;
 }
 
 .sidebar-header {
@@ -97,10 +106,12 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 }
 
-.sidebar-header h2{
+.sidebar-header h2 {
   color: white;
+  margin: 0;
 }
 
 .new-chat-btn {
@@ -113,25 +124,26 @@ onUnmounted(() => {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: background-color 0.2s;
+  white-space: nowrap;
 }
 
-.new-chat-btn:hover {
+.new-chat-btn:active {
   background: #004d51;
 }
 
 .chats-list {
   flex: 1;
   overflow-y: auto;
+  padding: 0.5rem 0;
 }
 
 .chat-item {
   display: flex;
   align-items: center;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #404040;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background-color 0.2s;
 }
 
 .chat-item:hover {
@@ -145,20 +157,26 @@ onUnmounted(() => {
 
 .chat-info {
   flex: 1;
+  min-width: 0; 
 }
 
 .chat-title {
   font-weight: 600;
   color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .chat-preview {
   color: #6b7280;
   font-size: 0.875rem;
   margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Стили для контекстного меню */
 .context-menu {
   position: fixed;
   background: #252525;
@@ -181,5 +199,41 @@ onUnmounted(() => {
 
 .context-menu button:hover {
   background: #00ADB5;
+}
+
+
+@media (max-width: 768px) {
+  .chats-sidebar.is-mobile {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 85%;
+    max-width: 320px;
+    z-index: 20;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+  }
+
+  .chats-sidebar.is-mobile.is-open {
+    transform: translateX(0);
+  }
+  
+  .sidebar-header {
+    padding: 1rem;
+  }
+  
+  .chat-item {
+    padding: 0.75rem 1rem;
+  }
+  
+  .chat-title {
+    font-size: 0.9rem;
+  }
+  
+  .chat-preview {
+    font-size: 0.8rem;
+  }
 }
 </style>

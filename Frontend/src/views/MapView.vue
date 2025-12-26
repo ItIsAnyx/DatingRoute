@@ -8,7 +8,6 @@
           <button class="back-btn" @click="$router.go(-1)">
             ← Назад
           </button>
-          <h2>Интерактивный планировщик маршрутов</h2>
           <div class="route-actions">
             <button 
               class="action-btn" 
@@ -17,33 +16,22 @@
             >
               Обновить маршрут
             </button>
-            <!-- Кнопка смены режима временно убрана, т.к. не поддерживается бэкендом -->
-            <button 
-              class="action-btn" 
-              @click="exportRoute"
-              :disabled="loading"
-            >
-              Экспортировать
-            </button>
           </div>
         </div>
         
         <div class="map-content">
           <div id="map" class="map-wrapper"></div>
           
-          <!-- Индикатор загрузки -->
           <div v-if="loading" class="map-loader">
             <div class="loader-circle"></div>
             <p>Загрузка маршрута...</p>
           </div>
           
-          <!-- Блок с ошибкой -->
           <div v-if="error" class="map-error">
             <p>{{ error }}</p>
             <button @click="refreshRoute" class="retry-btn">Попробовать снова</button>
           </div>
           
-          <!-- Информационная панель с точками маршрута -->
           <div v-if="routeData && routeData.points" class="route-info">
             <h3>Точки маршрута</h3>
             <div class="route-points">
@@ -68,21 +56,17 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import HeaderComponent from '@/components/HeaderComponent.vue'
 
-// Получаем ID маршрута из URL
 const route = useRoute()
 const routeId = route.params.routeId
 
-// Состояние компонента
 const loading = ref(true)
 const error = ref(null)
 const routeData = ref(null)
 
-// Глобальные переменные для Яндекс.Карт
 let map = null
 let multiRoute = null
 let ymapsLoaded = false
 
-// --- Функции для работы с аутентификацией ---
 const getAuthToken = () => localStorage.getItem('access_token');
 const getAuthHeaders = () => {
   const token = getAuthToken();
@@ -92,9 +76,6 @@ const getAuthHeaders = () => {
   } : { 'Content-Type': 'application/json' };
 };
 
-// --- Функции для работы с Яндекс.Картами ---
-
-// Асинхронная загрузка API Яндекс.Карт
 const loadYandexMaps = () => {
   return new Promise((resolve, reject) => {
     if (window.ymaps) {
@@ -126,12 +107,11 @@ const loadYandexMaps = () => {
   })
 }
 
-// Инициализация карты после загрузки API
 const initMap = () => {
   if (!ymapsLoaded || !document.getElementById('map')) return
   
   map = new window.ymaps.Map('map', {
-    center: [55.751574, 37.573856], // Москва по умолчанию
+    center: [55.751574, 37.573856],
     zoom: 11,
     controls: ['zoomControl', 'fullscreenControl']
   })
@@ -139,7 +119,6 @@ const initMap = () => {
   loadRoute()
 }
 
-// Загрузка данных маршрута с бэкенда
 const loadRoute = async () => {
   if (!routeId) {
     error.value = 'ID маршрута не указан в URL.'
@@ -151,14 +130,11 @@ const loadRoute = async () => {
   error.value = null
   
   try {
-    // --- ГЛАВНОЕ ИЗМЕНЕНИЕ ЗДЕСЬ ---
-    // Явно указываем метод POST, как требует спецификация API
     const response = await fetch(`/api/routes/${routeId}/build`, { 
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({}) // Тело запроса может быть пустым
+      body: JSON.stringify({})
     });
-    // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
     if (!response.ok) {
       let errorText = `Ошибка ${response.status}`;
@@ -183,7 +159,6 @@ const loadRoute = async () => {
   }
 }
 
-// Построение маршрута на карте
 const buildRoute = (data) => {
   if (!map || !data || !data.points || data.points.length === 0) {
     console.warn('Нет данных для построения маршрута')
@@ -223,13 +198,10 @@ const buildRoute = (data) => {
   map.geoObjects.add(multiRoute)
 }
 
-// --- Функции-обработчики для кнопок ---
-
 const refreshRoute = () => {
   loadRoute()
 }
 
-// Экспорт маршрута
 const exportRoute = () => {
   if (!routeId) return
   
@@ -241,8 +213,6 @@ const exportRoute = () => {
   element.click()
   document.body.removeChild(element)
 }
-
-// --- Жизненный цикл компонента ---
 
 onMounted(async () => {
   try {
@@ -263,7 +233,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Стили остаются без изменений */
 .map-page {
   min-height: 100vh;
   background: #191919;
@@ -287,6 +256,8 @@ onUnmounted(() => {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #808080;
   background: #252525;
+  flex-shrink: 0;
+  justify-content: space-between;
 }
 
 .back-btn {
@@ -305,15 +276,10 @@ onUnmounted(() => {
   background: #00ADB5;
 }
 
-.map-header h2 {
-  color: white;
-  margin: 0;
-  flex-grow: 1;
-}
 
 .route-actions {
-  display: flex;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .action-btn {
@@ -325,6 +291,7 @@ onUnmounted(() => {
   cursor: pointer;
   font-weight: 500;
   transition: background 0.2s;
+  white-space: nowrap;
 }
 
 .action-btn:hover:not(:disabled) {
@@ -446,5 +413,47 @@ onUnmounted(() => {
 
 .point-name {
   flex: 1;
+}
+
+@media (max-width: 768px) {
+
+  .route-info {
+    left: 1rem;
+    right: 1rem;
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .map-header {
+    padding: 0.5rem;
+  }
+
+  .back-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+    margin-right: 0.5rem;
+  }
+
+  .map-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .action-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .map-error {
+    padding: 1rem;
+    max-width: 95%;
+  }
+
+  .route-info {
+    bottom: 0.5rem;
+    left: 0.5rem;
+    right: 0.5rem;
+    padding: 0.75rem;
+  }
 }
 </style>
