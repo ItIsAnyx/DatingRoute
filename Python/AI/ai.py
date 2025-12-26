@@ -9,6 +9,7 @@ from json_converter import JSONConverter
 load_dotenv()
 AI_SECRET_KEY = os.getenv("AI_SECRET_KEY")
 AI_BACKEND_KEY = os.getenv("AI_BACKEND_KEY")
+MAX_TOKENS_RESPONSE = int (os.getenv("MAX_TOKENS_RESPONSE"))
 
 app = FastAPI(title="Простые запрос-ответы к нейросети")
 client = OpenAI(api_key=AI_SECRET_KEY, base_url="https://api.deepseek.com")
@@ -46,7 +47,7 @@ def load_model():
     print("Запущена модель")
 
 def call_llm(messages):
-    out = client.chat.completions.create(model="deepseek-chat", messages=messages)
+    out = client.chat.completions.create(model="deepseek-chat", messages=messages, max_tokens=MAX_TOKENS_RESPONSE, temperature=1.3)
     return out.choices[0].message.content
 
 def trim_context(context: list, keep_last=8):
@@ -89,7 +90,7 @@ def get_answer(payload: MessageRequest,
                     """You help users plan walking routes and suggest places to visit.
                     You may recommend cafes, restaurants, attractions, parks and streets.
                     If the topic is unrelated to places or routes, say it is outside your competence.
-                    Reply in the user's language."""
+                    Reply in the user's language. Don't use markdown in answers."""
                  },
                 {"role": "user", "content": user_text},
             ]
@@ -99,7 +100,7 @@ def get_answer(payload: MessageRequest,
                     """You help users plan walking routes and suggest places to visit.
                     You may recommend cafes, restaurants, attractions, parks and streets.
                     If the topic is unrelated to places or routes, say it is outside your competence.
-                    Reply in the user's language."""
+                    Reply in the user's language. Don't use markdown in answers."""
                  },
             ] + context + [{"role": "user", "content": user_text}]
 
@@ -174,21 +175,36 @@ def summarize(payload: SummarizeRequest, api_key = Header(..., alias="AI_BACKEND
         "role": "system",
         "content": """
         Extract final route points from the dialogue.
-        Keep only confirmed places.
+
+        Include:
+        - starting point (where the user starts from), but REMOVE words like "Старт" or "Start"
+        - all confirmed intermediate places
+        - final destination, if mentioned
+
+        Keep only places explicitly mentioned by the user.
+        Do not invent places, addresses, or cities.
+
+        If the city is explicitly mentioned or clearly implied in the dialogue,
+        append the city name to each route point.
+        If the city is not mentioned, do NOT add it.
+
+        If a place already contains an address, keep it unchanged.
+        Keep the place name itself.
+
+        Output the points in the order of the route.
         If no route was planned, output nothing.
-        Output a semicolon-separated list only.
+        Output a semicolon-separated cleaned list only.
         """
     }] + payload.context +
     [
         {
             "role": "user",
-            "content": "List the final route points."
+            "content": "List the final route points mentioned by the user"
         }
     ])
 
     out = client.chat.completions.create(model="deepseek-chat", messages=messages, max_tokens=400)
     print(out)
-    # Пробуем извлечь текст
     try:
         text_response = out.choices[0].message.content
 

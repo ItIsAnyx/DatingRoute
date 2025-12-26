@@ -41,7 +41,7 @@ services:
     environment:
       - AI_SECRET_KEY=${AI_SECRET_KEY}
       - AI_BACKEND_KEY=${AI_BACKEND_KEY}
-      - MAX_TOKENS_RESPONSE=1028
+      - MAX_TOKENS_RESPONSE=2048
     command: "python -m uvicorn ai:app --host 0.0.0.0 --port 8082"
     networks:
       - app-network
