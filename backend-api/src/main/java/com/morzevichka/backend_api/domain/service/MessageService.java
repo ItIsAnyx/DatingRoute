@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MessageService {
 
-    private static final int MAX_MESSAGE_LENGTH = 1000;
+    private static final int MAX_MESSAGE_LENGTH = 2000;
     private final ChatService chatService;
 
     public void validateMessage(User user, Chat chat, Message message) {

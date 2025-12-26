@@ -1,6 +1,7 @@
 package com.morzevichka.backend_api.application.usecase;
 
 import com.morzevichka.backend_api.api.dto.route.RouteBuildResponse;
+import com.morzevichka.backend_api.api.dto.route.RouteMapKeyResponse;
 import com.morzevichka.backend_api.api.dto.route.RoutePointsResponse;
 import com.morzevichka.backend_api.api.dto.route.RouteResponse;
 import com.morzevichka.backend_api.application.dto.route.RouteAddressClientResponse;
@@ -141,5 +142,9 @@ public class RouteUseCase {
         } catch (Exception e) {
             throw new RuntimeException("Не удалось получить координаты для точки: " + name, e);
         }
+    }
+
+    public RouteMapKeyResponse getMapKey() {
+        return routeClient.getMapKey();
     }
 }

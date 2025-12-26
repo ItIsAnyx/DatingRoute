@@ -9,6 +9,7 @@ load_dotenv()
 app = FastAPI()
 GEOSUGGEST_KEY = os.getenv("GEOSUGGEST_KEY")
 GEOCODER_KEY = os.getenv("GEOCODER_KEY")
+YANDEX_MAPS_API_KEY = os.getenv("YANDEX_MAPS_API_KEY")
 YANDEX_GEOCODE_URL = "https://geocode-maps.yandex.ru/v1/"
 YANDEX_SUGGEST_URL = "https://suggest-maps.yandex.ru/v1/suggest"
 
@@ -101,6 +102,10 @@ def get_addresss(payload: GeoGuessRequest):
 
     except (KeyError, IndexError, TypeError):
         raise HTTPException(status_code=404, detail="Address not found")
+
+@app.get("/api/maps-key")
+def get_key():
+    return {"key": YANDEX_MAPS_API_KEY}
 
 @app.get("/api/health")
 def health():

@@ -38,7 +38,7 @@ public class ChatUseCase {
     }
 
     public ChatCreateResponse createChat(ChatCreateRequest request) {
-        MessageResponse messageResponse = messageUseCase.send(new MessageRequest(null, request.message()));
+        MessageResponse messageResponse = messageUseCase.send(new MessageRequest(request.message()), null, null);
 
         Chat chat = chatApplicationService.getChatForCurrentUser(messageResponse.getChatId());
 

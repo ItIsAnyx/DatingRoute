@@ -26,45 +26,61 @@ defineProps({
 
 <style scoped>
 .no-chat-selected {
-    margin: auto;
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
-  padding: 2rem;
+  padding: 1rem;
+  text-align: center;
 }
 
 .welcome-message {
-  text-align: center;
-  max-width: 500px;
   color: white;
-}
-.welcome-message h3, .welcome-message p{
-  margin: 15px;
+  max-width: 500px;
 }
 
-.welcome-icon {
-  font-size: 4rem;
-  margin-bottom: 1.5rem;
+.welcome-message h3, .welcome-message p {
+  margin: 0.5rem 0 1.5rem 0;
 }
 
 .prompt-suggestions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
 }
 
 .prompt-suggestion {
   padding: 1rem;
   background: #252525;
-  border: none;
+  border: 1px solid #404040;
   border-radius: 8px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: background-color 0.2s, border-color 0.2s;
   text-align: left;
 }
 
 .prompt-suggestion:hover {
   background: #00ADB5;
+  border-color: #00ADB5;
+}
+
+@media (max-width: 480px) {
+  .welcome-message {
+    max-width: 100%;
+  }
+  .welcome-message h3 {
+    font-size: 1.2rem;
+  }
+  .welcome-message p {
+    font-size: 0.9rem;
+  }
+  .prompt-suggestions {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .prompt-suggestion {
+    padding: 0.8rem;
+    font-size: 0.9rem;
+  }
 }
 </style>

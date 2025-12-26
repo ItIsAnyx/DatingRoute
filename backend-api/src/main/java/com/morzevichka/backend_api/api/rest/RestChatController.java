@@ -115,13 +115,4 @@ public class RestChatController {
         PageableMessageResponse response = messageUseCase.getPageableMessages(chatId, pageable);
         return ResponseEntity.ok(response);
     }
-
-    @PostMapping("/send")
-    @Operation(summary = "send a message (temp)")
-    @Deprecated
-    public ResponseEntity<MessageResponse> sendMessage(
-            @RequestBody @Valid MessageRequest request) {
-        MessageResponse response = messageUseCase.send(request);
-        return ResponseEntity.ok(response);
-    }
 }

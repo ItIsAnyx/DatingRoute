@@ -35,6 +35,10 @@ public class UserApplicationService {
         }
     }
 
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
     public User createUser(String login, String email, String password) {
         userService.ensureUserDoesNotExists(email);
 

@@ -1,5 +1,6 @@
 package com.morzevichka.backend_api.infrastructure.client;
 
+import com.morzevichka.backend_api.api.dto.route.RouteMapKeyResponse;
 import com.morzevichka.backend_api.application.dto.route.RouteAddressClientRequest;
 import com.morzevichka.backend_api.application.dto.route.RouteAddressClientResponse;
 import com.morzevichka.backend_api.application.dto.route.RouteCoordsClientRequest;
@@ -50,6 +51,17 @@ public class RouteClient {
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<RouteCoordsClientResponse>() {})
+                .block();
+    }
+
+    public RouteMapKeyResponse getMapKey() {
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/api/maps-key")
+                        .build()
+                )
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<RouteMapKeyResponse>() {})
                 .block();
     }
 }

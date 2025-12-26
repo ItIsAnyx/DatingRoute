@@ -16,7 +16,7 @@
           <p class="feature">От простых встреч до особых свиданий - мы оптимизируем социальную навигацию.</p>
           <p class="feature">Ваши желания + наш ИИ = идеально спланированный отдых.</p>
         </div>
-        <button class="cta-button">
+        <button class="cta-button" @click="handleGetStarted">
           Приступим  <b>→</b>
         </button>
       </div>
@@ -28,13 +28,20 @@
 </template>
 
 <script setup>
-import homeImage from '@/assets/home.svg'
+import { useRouter } from 'vue-router';
+import homeImage from '@/assets/home.svg';
+
+const router = useRouter();
+
+const handleGetStarted = () => {
+  router.push({ path: '/auth', query: { mode: 'register' } });
+};
 </script>
 
 <style scoped>
 .hero-section {
   margin: 0 auto;
-  max-width: 1200px;
+  max-width: 1500px;
   min-height: 100vh;
   background: black;
   display: flex;

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -45,6 +46,12 @@ public class RestRouteController {
     @PostMapping(value = "/{routeId}/build")
     public ResponseEntity<RouteBuildResponse> buildRoute(@PathVariable UUID routeId) {
         RouteBuildResponse response = routeUseCase.build(routeId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(value = "/maps-key")
+    public ResponseEntity<RouteMapKeyResponse> getMapKey() {
+        RouteMapKeyResponse response = routeUseCase.getMapKey();
         return ResponseEntity.ok(response);
     }
 }
