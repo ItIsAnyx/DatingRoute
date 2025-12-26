@@ -71,11 +71,13 @@ services:
       retries: 3
   
   frontend:
-    build: ./Frontend
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile.dev
     image: frontend
     container_name: frontend 
     ports:
-      - "8080:8080"
+      - "8080:80"
     depends_on:
       - backend-api
     networks:

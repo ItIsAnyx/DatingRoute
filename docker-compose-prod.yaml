@@ -39,7 +39,7 @@ services:
     environment:
       - AI_SECRET_KEY=${AI_SECRET_KEY}
       - AI_BACKEND_KEY=${AI_BACKEND_KEY}
-      - MAX_TOKENS_RESPONSE=1028
+      - MAX_TOKENS_RESPONSE=2048
     command: "python -m uvicorn ai:app --host 0.0.0.0 --port 8082"
     networks:
       - app-network
@@ -56,6 +56,7 @@ services:
     environment:
       - GEOCODER_KEY=${GEOCODER_KEY}
       - GEOSUGGEST_KEY=${GEOSUGGEST_KEY}
+      - YANDEX_MAPS_API_KEY=${YANDEX_MAPS_API_KEY}
     command: "python -m uvicorn YandApi:app --host 0.0.0.0 --port 8083"
     networks:
       - app-network
@@ -66,7 +67,9 @@ services:
       retries: 3
   
   frontend:
-    build: ./Frontend
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
     image: frontend
     container_name: frontend 
     depends_on:
