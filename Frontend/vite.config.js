@@ -1,13 +1,13 @@
 import { fileURLToPath, URL } from 'node:url'
-
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-  preview: {
-    port: 8080
+  define: {
+    // Определяем `global` для браузера, чтобы библиотеки не ломались
+    global: 'globalThis',
   }, 
   plugins: [
     vue(),
@@ -20,7 +20,11 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': process.env.BACKEND_API_URL || 'http://localhost:8081'
+      '/api': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+        secure: false,
+      }
     }
   }
 })

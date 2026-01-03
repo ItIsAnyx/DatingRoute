@@ -4,7 +4,6 @@ import com.morzevichka.backend_api.domain.model.Chat;
 import com.morzevichka.backend_api.domain.model.Message;
 import com.morzevichka.backend_api.domain.model.User;
 import com.morzevichka.backend_api.infrastructure.exception.message.MessageLengthException;
-import com.morzevichka.backend_api.infrastructure.exception.chat.UserChatMismatchException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MessageService {
 
-    private static final int MAX_MESSAGE_LENGTH = 500;
+    private static final int MAX_MESSAGE_LENGTH = 2000;
     private final ChatService chatService;
 
     public void validateMessage(User user, Chat chat, Message message) {

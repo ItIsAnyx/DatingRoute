@@ -1,16 +1,4 @@
 spring:
-  application:
-    name: backend-api
-
-  flyway:
-    locations: classpath:db/migration
-
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: ${DB_URL}/${DB_DATABASE}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -20,36 +8,15 @@ spring:
 
   jpa:
     show-sql: true
-    hibernate:
-      ddl-auto: validate
-
-  threads:
-    virtual:
-      enabled: true
-
-server:
-  port: 8081
 
 service:
+  frontend:
+    url: ${FRONTEND_SERVICE_URL:http://localhost:8080}
   ai:
     url: ${AI_SERVICE_URL:http://localhost:8082}
-    secret-key: ${AI_SECRET_KEY}
+    secret-key: ${AI_BACKEND_KEY}
   map:
     url: ${MAP_SERVICE_URL:http://localhost:8083}
-
-application:
-  security:
-    jwt:
-      secret-key: ${JWT_SECRET_KEY}
-      access-expiration: 86400000
-      refresh-expiration: 604800000
-
-springdoc:
-  api-docs:
-    path: /docs
-  swagger-ui:
-    path: /docs
-    operations-sorter: method
 
 logging:
   level:

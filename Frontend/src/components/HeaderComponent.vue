@@ -21,15 +21,23 @@
             Чаты
           </RouterLink>
 
+          <!-- ИЗМЕНЕНИЕ 1: Заменяем <a> на <RouterLink> для "Возможности" -->
           <RouterLink 
-            to="/planner"
+            to="/features"
             class="nav-link"
-            :class="{ active: isActive('/planner') }"
+            :class="{ active: isActive('/features') }"
           >
-            Планировщик
+            Возможности
           </RouterLink>
-          <a href="#" class="nav-link">Возможности</a>
-          <a href="#" class="nav-link">О нас</a>
+
+          <!-- ИЗМЕНЕНИЕ 2: Заменяем <a> на <RouterLink> для "О нас" -->
+          <RouterLink 
+            to="/about"
+            class="nav-link"
+            :class="{ active: isActive('/about') }"
+          >
+            О нас
+          </RouterLink>
         </div>
 
         <div v-if="isAuthenticated" class="user-menu">
@@ -84,7 +92,7 @@ const logout = () => {
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 1rem 2rem;
   display: flex;

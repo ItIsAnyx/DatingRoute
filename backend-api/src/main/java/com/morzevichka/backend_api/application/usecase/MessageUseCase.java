@@ -1,7 +1,7 @@
 package com.morzevichka.backend_api.application.usecase;
 
-import com.morzevichka.backend_api.api.dto.ai.AiCreateResponse;
-import com.morzevichka.backend_api.api.dto.ai.AiResponse;
+import com.morzevichka.backend_api.application.dto.ai.AiCreateClientResponse;
+import com.morzevichka.backend_api.application.dto.ai.AiClientResponse;
 import com.morzevichka.backend_api.api.dto.commands.SendMessageCommand;
 import com.morzevichka.backend_api.api.dto.message.MessageRequest;
 import com.morzevichka.backend_api.api.dto.message.MessageResponse;
@@ -23,9 +23,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -56,12 +58,17 @@ public class MessageUseCase {
                 .build();
     }
 
-    public MessageResponse send(MessageRequest request) {
-        User user = userApplicationService.getCurrentUser();
-        return send(new SendMessageCommand(request.chatId(), user, request.message()));
-    }
+    @Transactional
+    public MessageResponse send(MessageRequest request, Long chatId, Principal principal) {
+        User user;
+        if (Objects.nonNull(principal)) {
+            user = userApplicationService.findByEmail(principal.getName());
+        } else {
+            user = userApplicationService.getCurrentUser();
+        }
 
-    public MessageResponse send(SendMessageCommand cmd) {
+        SendMessageCommand cmd = new SendMessageCommand(chatId, user, request.message(), principal);
+
         if (cmd.chatId() == null) {
             return sendFirstMessage(cmd);
         } else {
@@ -70,7 +77,7 @@ public class MessageUseCase {
     }
 
     private MessageResponse sendFirstMessage(SendMessageCommand cmd) {
-        AiCreateResponse ai = aiClient.createChatRequest(cmd.content());
+        AiCreateClientResponse ai = aiClient.createChatRequest(cmd.content());
         log.info("Response from AI, title: {}, text: {}, context: {}", ai.getTitle(), ai.getMessage(), ai.getContext());
 
         chatService.isTitleEmpty(ai.getTitle());
@@ -82,32 +89,33 @@ public class MessageUseCase {
     }
 
     private MessageResponse sendExistingChat(SendMessageCommand cmd) {
-        Chat chat = chatApplicationService.getChat(cmd.chatId());
-
-        chatService.isUserInChat(cmd.user().getId(), chat.getUser().getId());
+        Chat chat;
+        if (Objects.nonNull(cmd.principal())) {
+            chat = chatApplicationService.getChatForCurrentUserWs(cmd.chatId(), cmd.principal());
+        } else {
+            chat = chatApplicationService.getChatForCurrentUser(cmd.chatId());
+        }
 
         Context context = contextApplicationService.getContext(chat.getId());
 
         log.info("Context: {}", context.getInnerContexts());
 
-        AiResponse ai = aiClient.sendMessageRequest(cmd.content(), context);
+        AiClientResponse ai = aiClient.sendMessageRequest(cmd.content(), context);
+
         log.info("Response from AI, text: {}, context: {}", ai.getMessage(), ai.getContext());
 
         return saveMessagesAndContext(chat, cmd.user(), ai.getContext(), cmd.content(), ai.getMessage());
     }
 
     private MessageResponse saveMessagesAndContext(Chat chat, User user, List<InnerContext> context, String userMessageContent, String aiMessageContent) {
-        CompletableFuture<Message> userFuture =
-                messageApplicationService.createUserMessageAsync(chat, user, userMessageContent);
+        Message userFuture =
+                messageApplicationService.createUserMessage(chat, user, userMessageContent);
 
-        CompletableFuture<Message> aiFuture =
-                messageApplicationService.createAiMessageAsync(chat, user, aiMessageContent);
-
-        Message userMsg = userFuture.join();
-        Message aiMsg = aiFuture.join();
+        Message aiFuture =
+                messageApplicationService.createAiMessage(chat, user, aiMessageContent);
 
         contextApplicationService.saveContext(chat, context);
 
-        return messageMapper.toResponse(aiMsg);
+        return messageMapper.toResponse(aiFuture);
     }
 }

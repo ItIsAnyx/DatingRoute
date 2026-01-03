@@ -7,22 +7,6 @@
     <main class="main-content">
       <div class="container">
         <div class="auth-card">
-          <div class="mode-switcher">
-            <button 
-              class="mode-btn" 
-              :class="{ active: isLoginMode }"
-              @click="setLoginMode"
-            >
-              Вход
-            </button>
-            <button 
-              class="mode-btn" 
-              :class="{ active: !isLoginMode }"
-              @click="setRegisterMode"
-            >
-              Регистрация
-            </button>
-          </div>
 
           <div class="card-header">
             <h1 class="title">
@@ -116,15 +100,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+
+
+import { ref, onMounted, watch } from 'vue' 
+import { useRouter, useRoute } from 'vue-router' 
 import axios from 'axios'
 
 const API_URL = '/api/auth'
 
 const router = useRouter()
+const route = useRoute() 
 
-const isLoginMode = ref(true)
+const isLoginMode = ref(route.query.mode !== 'register')
 const loading = ref(false)
 
 const goToHome = () => {
@@ -159,26 +146,38 @@ const resetForm = () => {
   }
 }
 
+watch(
+  () => route.query.mode,
+  (newMode) => {
+    if (newMode === 'register' || newMode === 'login') {
+      isLoginMode.value = newMode !== 'register';
+      resetForm(); 
+    }
+  }
+);
+
+
 const handleSubmit = async () => {
   loading.value = true
 
   try {
     if (isLoginMode.value) {
-      // === Вход ===
+
       const response = await axios.post(`${API_URL}/login`, {
         email: formData.value.email,
         password: formData.value.password
       })
 
-      // Сохраняем токены
       const { access_token, refresh_token } = response.data
       localStorage.setItem('access_token', access_token)
       localStorage.setItem('refresh_token', refresh_token)
+      
+      if (response.data.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
 
-      alert('Вход выполнен успешно!')
-      router.push('/chats') // или на главную страницу
+      router.push('/chats')
     } else {
-      // === Регистрация ===
       if (formData.value.password !== formData.value.confirmPassword) {
         alert('Пароли не совпадают')
         loading.value = false
@@ -187,31 +186,32 @@ const handleSubmit = async () => {
 
       const response = await axios.post(`${API_URL}/register`, {
         email: formData.value.email,
-        login: formData.value.fullName, // в .md поле "login"
+        login: formData.value.fullName,
         password: formData.value.password
       })
 
-      // Сохраняем токены
       const { access_token, refresh_token } = response.data
       localStorage.setItem('access_token', access_token)
       localStorage.setItem('refresh_token', refresh_token)
 
-      alert('Регистрация прошла успешно!')
+      if (response.data.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
+
       router.push('/chats')
     }
   } catch (error) {
     if (error.response) {
       console.error('Ошибка:', error.response.data)
-      alert(`Ошибка: ${error.response.data.error || 'Что-то пошло не так'}`)
+
     } else {
       console.error('Ошибка запроса:', error)
-      alert('Сервер недоступен')
+
     }
   } finally {
     loading.value = false
   }
 }
-
 
 </script>
 
@@ -322,7 +322,7 @@ const handleSubmit = async () => {
   padding: 2.5rem;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   max-width: 440px;
-  width: 100%;
+
   margin: 2rem;
   position: relative;
 }

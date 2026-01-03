@@ -2,21 +2,18 @@
   <section class="chat-area">
     <div class="chat-container">
       <div class="chat-header">
-        <button class="action-btn" @click="$emit('back')">← Назад</button>
-
-        <div class="chat-header-info">
-          <span class="chat-title-main">{{ chat.title }}</span>
-        </div>
-
-        <div class="chat-actions">
-          <button class="action-btn" @click="clearChat">Очистить чат</button>
-          <button class="action-btn" @click="exportChat">Экспорт чата</button>
-        </div>
+          <button class="action-btn delete-btn" @click="handleDeleteChat" title="Удалить чат">Удалить чат</button>
       </div>
 
       <MessageList :messages="chat.messages" :user-initials="userInitials" :loading="loading" />
 
-      <MessageInput @send="$emit('send', $event)" :disabled="loading" />
+      <MessageInput 
+        @send="$emit('send', $event)" 
+        @generate-points="$emit('generate-points')"
+        @generate-route="$emit('generate-route')"
+        :disabled="loading" 
+        :has-route="hasRoute"
+      />
     </div>
   </section>
 </template>
@@ -25,71 +22,85 @@
 import MessageList from './MessageList.vue'
 import MessageInput from './MessageInput.vue'
 
-defineProps({
+const props = defineProps({
   chat: Object,
   userInitials: String,
-  loading: Boolean
+  loading: Boolean,
+  hasRoute: Boolean,
+  isMobile: Boolean
 })
 
-const emit = defineEmits(['clear-chat', 'export-chat'])
+const emit = defineEmits(['clear-chat', 'export-chat', 'delete-chat', 'send', 'generate-points', 'generate-route', 'back'])
 
-const clearChat = () => {
-  emit('clear-chat')
-}
 
-const exportChat = () => {
-  emit('export-chat')
+const handleDeleteChat = () => {
+  if (props.chat) {
+    emit('delete-chat', props.chat.id)
+  }
 }
 </script>
 
 <style scoped>
 .chat-area {
-  flex: 1;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  background-color: #191919;
 }
 
 .chat-container {
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden; 
 }
 
 .chat-header {
   display: flex;
   align-items: center;
-  padding: 1rem 1.5rem;
+  justify-content: flex-end;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid #808080;
+  background: #191919;
+  flex-shrink: 0;
 }
 
-
+.back-btn {
+  margin-right: 1rem;
+}
 
 .chat-title-main {
   font-weight: 600;
   color: white;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chat-actions {
-  margin-left: auto;
   display: flex;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .action-btn {
-  background: none;
-  border: none;
-  background: #252525;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-right: 1rem;
-  font-weight: 500;
+display: flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.5rem 1rem;
-  transition: 0.2s;
-}
-
-.action-btn:hover {
   background: #00ADB5;
   color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
 }
+
+.action-btn:active {
+  background: #b50000;
+}
+
+
 </style>

@@ -25,9 +25,8 @@ import java.io.IOException;
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtProvider jwtProvider;
-    private final CustomUserDetailsService userDetailsService;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final AuthenticatorService authenticatorService;
 
     @Override
     protected void doFilterInternal(
@@ -44,21 +43,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String jwt = authHeader.substring(7);
         try {
-            final String userEmail = jwtProvider.extractUsername(jwt);
+            final UsernamePasswordAuthenticationToken authToken = authenticatorService
+                    .getAuthenticatedOfFail(jwt, request);
 
-            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-                if (jwtProvider.isTokenValid(jwt)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                    );
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                    log.info("Authentication was successfully put in context");
-                }
+            if (authToken != null) {
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+                log.info("Authentication was successfully put in context");
             }
+
             filterChain.doFilter(request, response);
         } catch (ExpiredJwtException ex) {
             authenticationEntryPoint.commence(request, response, new InsufficientAuthenticationException("JWT expired", ex));

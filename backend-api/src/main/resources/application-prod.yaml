@@ -1,38 +1,16 @@
 spring:
-  application:
-    name: backend-api
-
-  flyway:
-    locations: classpath:db/migration
-
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: ${DB_URL}/${DB_DATABASE}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
       timeout: 60000
 
-server:
-  port: 8081
-
 service:
+  frontend:
+    url: ${FRONTEND_SERVICE_URL}
   ai:
-    url: http://localhost:8082
-    secret-key: ${AI_SECRET_KEY}
-
-application:
-  security:
-    jwt:
-      secret-key: ${JWT_SECRET_KEY}
-      expiration: 900000
-      refresh-expiration: 900000
+    url: ${AI_SERVICE_URL}
+    secret-key: ${AI_BACKEND_KEY}
+  map:
+    url: ${MAP_SERVICE_URL}
